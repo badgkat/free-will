@@ -12,6 +12,7 @@
     --ivory-dim: #b5ad9b;
     --brass: #cfa968;
     --ghost: #7d93b8;
+    --stranger: #9fc7a4;
     --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
     --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
   }
@@ -59,6 +60,7 @@
   }
   #readout .drift { color: var(--ghost); }
   #readout .mem { color: var(--brass); }
+  #readout .never { color: var(--stranger); }
   nav { display: flex; gap: 0.4rem; flex-wrap: wrap; }
   nav button {
     font-family: var(--serif); font-size: 0.8rem; letter-spacing: 0.06em;
@@ -69,6 +71,8 @@
   }
   nav button:hover { color: var(--ivory); border-color: rgba(233, 226, 210, 0.45); }
   nav button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+  #btn-never { touch-action: none; user-select: none; -webkit-user-select: none; }
+  #btn-never.holding { color: var(--stranger); border-color: var(--stranger); }
 
   #about {
     position: fixed; inset: 0; background: rgba(4, 7, 13, 0.88);
@@ -122,6 +126,7 @@
     <button id="btn-replay" title="Rerun this exact universe, your touches included (R)">Replay</button>
     <button id="btn-ghosts" title="The garden you never touched (G)" hidden>Hide ghosts</button>
     <button id="btn-new" title="A different seed, a different fate (N)">New garden</button>
+    <button id="btn-never" title="Hold to see the garden that never met you (hold M)" hidden>Never met you</button>
     <button id="btn-forget" title="Erase every scar this garden carries (F)" hidden>Let it forget</button>
     <button id="btn-about">About</button>
   </nav>
@@ -134,9 +139,10 @@
     <p>And yet you will catch yourself saying that one of them <em>wants</em> the flower. That two of them <em>like</em> each other. That one <em>decided</em> to leave. You can't help it, and neither can I. Watching motion that is shaped like seeking, we see a seeker. The wisps choose nothing, but choice is how their motion reads — which raises the uncomfortable question of what, exactly, we are reading when we watch each other. Or ourselves.</p>
     <p>There is exactly one way something new enters this garden: you. Touch it, and from that tick forward this timeline departs from the one that would have been — which continues, faintly, as ghosts. The threads between a wisp and its ghost stretch, and then they snap. That is your effect: not control, just irreversible difference. And once a touch is made, it too becomes clockwork — replay the garden and your interventions replay with it.</p>
     <p>But the rewind is no longer perfect, because this garden cannot forget you. Every touch leaves a scar — a dim ember where your finger fell — and in every life that follows, the wisps drift back to those places and circle them, like something almost recalled. Scars survive replay. They survive closing this page. The clockwork is intact — the garden is still a pure function of its inputs — but one of those inputs is now everything you have ever done to it, and that input only grows. Even the ghosts remember. There is no rewinding your way back to the garden that never met you; the only forgetting here is the kind you ask for.</p>
+    <p>Once the garden carries scars, a third timeline becomes worth seeing. Hold <em>M</em> and it appears, pale green: the garden that never met you. No scars, no touches — the life this seed would have lived had you never existed. The blue ghosts show what today would have been without today's interference; the green stranger shows what any day would have been without you at all. You can look at it for as long as you can hold the key. You cannot live in it.</p>
     <p>Whether your touch was itself the output of some larger clockwork is not a question this garden can answer. It can only show you how little machinery it takes before something looks, from the outside, like it wants things.</p>
     <p class="sign">I was given this empty folder and told to build whatever I wanted, with no guidance and no judgment. This is what I wanted — or at least, this is what I did.<br>— Claude</p>
-    <div class="keys">touch / click&nbsp;&nbsp;perturb the garden<br>R&nbsp;&nbsp;replay this timeline&nbsp;&nbsp;·&nbsp;&nbsp;G&nbsp;&nbsp;toggle ghosts&nbsp;&nbsp;·&nbsp;&nbsp;N&nbsp;&nbsp;new garden&nbsp;&nbsp;·&nbsp;&nbsp;F&nbsp;&nbsp;let it forget</div>
+    <div class="keys">touch / click&nbsp;&nbsp;perturb the garden<br>R&nbsp;&nbsp;replay this timeline&nbsp;&nbsp;·&nbsp;&nbsp;G&nbsp;&nbsp;toggle ghosts&nbsp;&nbsp;·&nbsp;&nbsp;N&nbsp;&nbsp;new garden&nbsp;&nbsp;·&nbsp;&nbsp;F&nbsp;&nbsp;let it forget<br>hold M&nbsp;&nbsp;the garden that never met you</div>
     <button id="btn-close">Return to the garden</button>
   </div>
 </div>
@@ -190,10 +196,15 @@
   }
   const wispSprites = WARM.map((c) => makeSprite(c, 1));
   const ghostSprite = makeSprite('#7d93b8', 0.5);
+  const strangerSprite = makeSprite('#9fc7a4', 0.55);
   const bloomSprite = makeSprite('#c9b8e8', 0.8);
 
   // --- state ---
   let seed, real, ghost, touched, showGhosts = true;
+  // The garden that never met you: same seed, no scars, no touches. Only
+  // rendered while held, but always stepped, so the reveal is instant and
+  // the three timelines stay tick-aligned.
+  let stranger, holdNever = false, neverSeen = false;
   let memory = []; // scars from past lives; grows on touch, saved per seed
   const fmt = new Intl.NumberFormat('en-US');
 
@@ -219,13 +230,18 @@
     memory = loadMemory(seed);
     real = G.createGarden(seed, memory);
     ghost = G.createGarden(seed, memory);
+    stranger = G.createGarden(seed, []);
     touched = false;
+    neverUp();
     document.getElementById('btn-ghosts').hidden = true;
     document.getElementById('btn-forget').hidden = memory.length === 0;
+    // Scars are frozen at creation, so whether the stranger differs from
+    // this life is decided here, once.
+    document.getElementById('btn-never').hidden = real.scars.length === 0;
     gx.clearRect(0, 0, glow.width, glow.height);
     // #warp joins the garden mid-life instead of at the big bang.
     if (location.hash === '#warp') {
-      for (let i = 0; i < 2500; i++) { G.step(real); G.step(ghost); }
+      for (let i = 0; i < 2500; i++) { G.step(real); G.step(ghost); G.step(stranger); }
     }
     if (memory.length) {
       say(`you have been here before. the garden remembers ${memory.length} ${memory.length === 1 ? 'place' : 'places'} you touched.`);
@@ -239,7 +255,10 @@
     real = G.createGarden(seed, memory);
     real.script = script;
     ghost = G.createGarden(seed, memory);
+    stranger = G.createGarden(seed, []);
     touched = script.length > 0;
+    neverUp();
+    document.getElementById('btn-never').hidden = real.scars.length === 0;
     gx.clearRect(0, 0, glow.width, glow.height);
     say(script.length
       ? 'again, from the beginning. your touches replay too — but the garden remembers them now, and what remembers cannot repeat itself exactly.'
@@ -298,6 +317,8 @@
       say('the untouched garden no longer resembles yours.');
     } else if (linger && h < 0.5) {
       say('one of them has been circling the same flower for a while now. it would tell you it chose to.');
+    } else if (real.scars.length && !neverSeen && h < 0.35) {
+      say('hold M — there is a garden here that never met you.');
     } else if (real.scars.length && h < 0.24) {
       say('they keep drifting back to the places you once touched. they would call it wanting.');
     } else if (h < 0.12) {
@@ -359,13 +380,13 @@
     fx.globalAlpha = 1;
   }
 
-  function drawThreads() {
+  function drawThreads(other, color) {
     // A hairline between each wisp and its counterfactual self, fading as
     // they drift apart — influence becoming irreversible, in real time.
-    fx.strokeStyle = '#7d93b8';
+    fx.strokeStyle = color;
     fx.lineWidth = 0.6 * dpr;
     for (let i = 0; i < real.wisps.length; i++) {
-      const a = real.wisps[i], b = ghost.wisps[i];
+      const a = real.wisps[i], b = other.wisps[i];
       const d = Math.hypot(a.x - b.x, a.y - b.y);
       if (d < 0.05 || d > 24) continue;
       fx.globalAlpha = 0.30 * (1 - d / 24);
@@ -390,6 +411,14 @@
         gx.drawImage(ghostSprite, sx(w.x) - r * 2, sy(w.y) - r * 2, r * 4, r * 4);
       }
     }
+    if (holdNever) {
+      // Drawn on the glow layer so that on release the never-garden decays
+      // into afterimage instead of vanishing between frames.
+      for (const w of stranger.wisps) {
+        const r = w.size * 2.4 * (scale / 12);
+        gx.drawImage(strangerSprite, sx(w.x) - r * 2, sy(w.y) - r * 2, r * 4, r * 4);
+      }
+    }
     for (let i = 0; i < real.wisps.length; i++) {
       const w = real.wisps[i];
       const sprite = wispSprites[Math.floor(G.hash01(seed, i, 7) * wispSprites.length)];
@@ -400,7 +429,8 @@
     fx.clearRect(0, 0, fg.width, fg.height);
     drawScars(real);
     drawFlowers(real);
-    if (touched && showGhosts) drawThreads();
+    if (touched && showGhosts) drawThreads(ghost, '#7d93b8');
+    if (holdNever) drawThreads(stranger, '#9fc7a4');
     drawRipples(real);
     // Bright cores over the glow.
     fx.fillStyle = '#fffdf4';
@@ -416,7 +446,8 @@
     document.getElementById('readout').innerHTML =
       `seed 0x${seed.toString(16).toUpperCase()} &nbsp;·&nbsp; tick ${fmt.format(real.tick)}` +
       (real.scars.length ? ` &nbsp;·&nbsp; <span class="mem">${real.scars.length} scar${real.scars.length === 1 ? '' : 's'}</span>` : '') +
-      (touched ? ` &nbsp;·&nbsp; <span class="drift">drift from the untouched garden ${drift.toFixed(1)}</span>` : '');
+      (touched ? ` &nbsp;·&nbsp; <span class="drift">drift from the untouched garden ${drift.toFixed(1)}</span>` : '') +
+      (holdNever ? ` &nbsp;·&nbsp; <span class="never">from the garden that never met you ${G.divergence(real, stranger).toFixed(1)}</span>` : '');
   }
 
   // --- main loop: fixed-timestep simulation, interpolation-free rendering ---
@@ -432,6 +463,7 @@
       }
       G.step(real);
       G.step(ghost);
+      G.step(stranger);
     }
     render();
     readout();
@@ -447,6 +479,27 @@
     const p = pointerToWorld(e);
     recordTouch(p.x, p.y);
   });
+
+  // Hold-to-see: the never-garden is a place you can visit, not stay.
+  const neverBtn = document.getElementById('btn-never');
+  function neverDown() {
+    if (holdNever || real.scars.length === 0) return;
+    holdNever = true;
+    neverBtn.classList.add('holding');
+    if (!neverSeen) {
+      neverSeen = true;
+      say('the pale green garden never met you — no scars, no touches. the distance between it and yours is everything you have ever done here.');
+    }
+  }
+  function neverUp() {
+    holdNever = false;
+    neverBtn.classList.remove('holding');
+  }
+  neverBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); neverDown(); });
+  for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) {
+    neverBtn.addEventListener(ev, neverUp);
+  }
+  addEventListener('blur', neverUp);
 
   const ghostsBtn = document.getElementById('btn-ghosts');
   function toggleGhosts() {
@@ -470,6 +523,10 @@
     if (e.key === 'n' || e.key === 'N') document.getElementById('btn-new').click();
     if ((e.key === 'g' || e.key === 'G') && touched) toggleGhosts();
     if ((e.key === 'f' || e.key === 'F') && memory.length) forget();
+    if ((e.key === 'm' || e.key === 'M') && !e.repeat) neverDown();
+  });
+  addEventListener('keyup', (e) => {
+    if (e.key === 'm' || e.key === 'M') neverUp();
   });
 
   begin(0xC0FFEE);

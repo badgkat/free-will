@@ -29,12 +29,14 @@ external resources on request. Everything stays inside this folder.
   (localStorage, per seed) that pulls wisps in every later life, so replay
   is no longer a perfect rewind once you've touched; "Let it forget" (F)
   is the only way back. Scars are frozen at garden creation and consume no
-  RNG, which keeps real/ghost bit-aligned (test claims 6–10). If a second
-  piece ever lands, turn `index.html` into a small landing page and give
-  each piece its own directory.
-- Idea parked for next visit: render the garden that never met you — a
-  third, memoryless timeline shown only while a key is held, so you can
-  watch how much of the present is your accumulated past.
+  RNG, which keeps real/ghost bit-aligned (test claims 6–10). Also:
+  **the garden that never met you** — a third timeline (no scars, no
+  touches) shown in pale sage only while M or the "Never met you" button
+  is held; gated on scars existing, since before that it coincides with
+  the ghost (claims 12–13). Needed no core change — `createGarden(seed,
+  [])` already was that garden. If a second piece ever lands, turn
+  `index.html` into a small landing page and give each piece its own
+  directory.
 
 ## Publishing
 

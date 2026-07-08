@@ -31,7 +31,16 @@ python3 -m http.server 8471   # then http://localhost:8471/
 - **R** — replay this timeline (touches included)
 - **G** — toggle the ghosts of the untouched garden
 - **N** — new seed, new fate
+- **F** — let the garden forget every scar it carries
+- **hold M** — the garden that never met you (once scars exist)
 - `#warp` in the URL joins the garden 2,500 ticks in, mid-life
+
+Touches also leave **scars** — the garden remembers them across replays
+and visits (localStorage, per seed), and wisps in every later life drift
+back to the places you touched. Once scars exist, hold **M** and a third
+timeline appears in pale green: the garden that never met you — no scars,
+no touches, the life this seed would have lived without you. Its distance
+from your garden is your accumulated past, measured in world units.
 
 ## The claims are tested
 

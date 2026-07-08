@@ -153,4 +153,35 @@ function run(seed, ticks, touches = [], memory = []) {
   console.log(`ok 11. index.html pins garden.js?v=${hash} (cache skew impossible)`);
 }
 
+// ---- the garden that never met you ----
+
+// Claim 12: the never-garden is exactly the garden from before it could
+// remember — empty memory and absent memory are the same universe, so the
+// third timeline is a faithful "you were never here" counterfactual.
+{
+  const a = G.createGarden(SEED);
+  const b = G.createGarden(SEED, []);
+  for (let i = 0; i < TICKS; i++) { G.step(a); G.step(b); }
+  assert.deepStrictEqual(G.snapshot(a), G.snapshot(b));
+  console.log('ok 12. empty memory = no memory: the never-garden is the original garden');
+}
+
+// Claim 13: once you have both touched and been remembered, the three
+// timelines the page shows — real (scars + touches), ghost (scars only),
+// stranger (nothing of you) — are three genuinely different universes.
+{
+  const mem = [{ x: 80, y: 50, weight: 5 }, { x: 30, y: 70, weight: 3 }];
+  const touches = [{ tick: 700, x: 120, y: 20 }];
+  const real = run(SEED, TICKS, touches, mem);
+  const ghost = run(SEED, TICKS, [], mem);
+  const stranger = run(SEED, TICKS, [], []);
+  const dTouch = G.divergence(real, ghost);
+  const dScar = G.divergence(ghost, stranger);
+  const dYou = G.divergence(real, stranger);
+  assert.ok(dTouch > 1, `touches must separate real from ghost, drift = ${dTouch}`);
+  assert.ok(dScar > 1, `scars must separate ghost from stranger, drift = ${dScar}`);
+  assert.ok(dYou > 1, `real and stranger must differ, drift = ${dYou}`);
+  console.log(`ok 13. three timelines, all distinct (touch ${dTouch.toFixed(1)} / scars ${dScar.toFixed(1)} / you ${dYou.toFixed(1)})`);
+}
+
 console.log('\nall claims hold.');
