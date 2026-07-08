@@ -2,6 +2,8 @@
 // The piece makes three claims to the viewer; each one is verified here.
 //   node test.cjs
 const assert = require('node:assert');
+const fs = require('node:fs');
+const crypto = require('node:crypto');
 const G = require('./garden.js');
 
 const SEED = 0xC0FFEE;
@@ -131,6 +133,24 @@ function run(seed, ticks, touches = [], memory = []) {
   G.remember(before, 140, 90);
   assert.strictEqual(JSON.stringify(before), frozen);
   console.log('ok 10. remember() leaves the past unmodified');
+}
+
+// Claim 11: the page requests the exact garden.js it was written against.
+// index.html and garden.js are coupled but cached independently (GitHub
+// Pages: max-age=600), and a stale garden.js under a fresh index.html
+// froze the page once. The script tag must carry a content hash of
+// garden.js so a new page can never be served a stale core from cache.
+{
+  const dir = __dirname + '/';
+  const hash = crypto.createHash('sha256')
+    .update(fs.readFileSync(dir + 'garden.js'))
+    .digest('hex').slice(0, 8);
+  const html = fs.readFileSync(dir + 'index.html', 'utf8');
+  const m = html.match(/<script src="garden\.js\?v=([0-9a-f]{8})">/);
+  assert.ok(m, 'index.html must load garden.js with a ?v=<hash> query');
+  assert.strictEqual(m[1], hash,
+    `index.html pins garden.js?v=${m && m[1]} but garden.js hashes to ${hash} — update the script tag`);
+  console.log(`ok 11. index.html pins garden.js?v=${hash} (cache skew impossible)`);
 }
 
 console.log('\nall claims hold.');

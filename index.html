@@ -141,7 +141,10 @@
   </div>
 </div>
 
-<script src="garden.js"></script>
+<!-- The ?v= hash pins the exact garden.js this page was written against;
+     without it, HTTP caching can pair a fresh page with a stale core
+     (test claim 11 keeps it in sync — run `node test.cjs` after edits). -->
+<script src="garden.js?v=9b2da4b2"></script>
 <script>
 (function () {
   'use strict';
