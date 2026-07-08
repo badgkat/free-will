@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Foregone</title>
+<style>
+  :root {
+    --night-0: #060a13;
+    --night-1: #0b1220;
+    --ivory: #e9e2d2;
+    --ivory-dim: #b5ad9b;
+    --brass: #cfa968;
+    --elsewhen: #8fa3c4;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(120% 90% at 50% 20%, var(--night-1) 0%, var(--night-0) 70%);
+    color: var(--ivory);
+    font-family: var(--serif);
+    overflow: hidden;
+  }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; cursor: ew-resize; touch-action: none; }
+
+  header { position: fixed; top: 1.4rem; left: 1.6rem; pointer-events: none; user-select: none; }
+  header h1 {
+    font-size: 1.05rem; font-weight: 500; letter-spacing: 0.28em;
+    text-transform: uppercase; color: var(--ivory);
+  }
+  header p {
+    margin-top: 0.35rem; font-size: 0.82rem; font-style: italic;
+    color: var(--ivory-dim); letter-spacing: 0.02em;
+  }
+
+  #caption {
+    position: fixed; left: 50%; bottom: 4.6rem; transform: translateX(-50%);
+    max-width: 34rem; text-align: center; font-style: italic;
+    font-size: 0.95rem; color: var(--ivory-dim); pointer-events: none;
+    opacity: 0; transition: opacity 1.6s ease; padding: 0 1rem;
+    text-wrap: balance;
+  }
+  #caption.show { opacity: 1; }
+
+  footer {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 1rem; padding: 0.9rem 1.6rem; flex-wrap: wrap;
+  }
+  #readout {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em;
+    color: var(--ivory-dim); user-select: none;
+  }
+  #readout .when { color: var(--elsewhen); }
+  nav { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  nav button {
+    font-family: var(--serif); font-size: 0.8rem; letter-spacing: 0.06em;
+    color: var(--ivory-dim); background: none;
+    border: 1px solid rgba(233, 226, 210, 0.18); border-radius: 2rem;
+    padding: 0.32rem 0.95rem; cursor: pointer;
+    transition: color 0.25s, border-color 0.25s;
+  }
+  nav button:hover { color: var(--ivory); border-color: rgba(233, 226, 210, 0.45); }
+  nav button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+  #about {
+    position: fixed; inset: 0; background: rgba(4, 7, 13, 0.88);
+    backdrop-filter: blur(6px); display: none; overflow-y: auto; z-index: 10;
+  }
+  #about.open { display: block; }
+  #about .sheet { max-width: 33rem; margin: 0 auto; padding: 14vh 1.6rem 4rem; }
+  #about h2 {
+    font-size: 0.9rem; font-weight: 500; letter-spacing: 0.28em;
+    text-transform: uppercase; margin-bottom: 2.2rem; color: var(--brass);
+  }
+  #about p { font-size: 1.02rem; line-height: 1.75; margin-bottom: 1.3rem; color: var(--ivory); }
+  #about a { color: var(--brass); }
+  #about p.sign { font-style: italic; color: var(--ivory-dim); }
+  #about .keys {
+    margin-top: 2.4rem; font-family: var(--mono); font-size: 0.72rem;
+    color: var(--ivory-dim); line-height: 2;
+  }
+  #about button {
+    margin-top: 2rem; font-family: var(--serif); font-size: 0.85rem;
+    color: var(--ivory-dim); background: none; letter-spacing: 0.06em;
+    border: 1px solid rgba(233, 226, 210, 0.25); border-radius: 2rem;
+    padding: 0.4rem 1.2rem; cursor: pointer;
+  }
+  #about button:hover { color: var(--ivory); }
+
+  @media (prefers-reduced-motion: reduce) { #caption { transition: none; } }
+</style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+
+<header>
+  <h1>Foregone</h1>
+  <p>a monument falls every day — nothing you do can change it</p>
+</header>
+
+<div id="caption"></div>
+
+<footer>
+  <div id="readout"></div>
+  <nav>
+    <button id="btn-past" title="The day before the one you are viewing (↓)">◂ yesterday</button>
+    <button id="btn-now" title="Return to now (N or Esc)" hidden>Now</button>
+    <button id="btn-future" title="The day after the one you are viewing (↑)">tomorrow ▸</button>
+    <button id="btn-about">About</button>
+  </nav>
+</footer>
+
+<div id="about" role="dialog" aria-modal="true" aria-label="About this piece">
+  <div class="sheet">
+    <h2>Foregone</h2>
+    <p>Each UTC day, this page raises a monument and takes it down, grain by grain. The date alone decides the shape; arithmetic decides the order the grains fall, the second each one lets go, the cell of dust where it comes to rest. It has been falling since midnight. It finishes at ten to midnight, and the dust sits in the dark until the next monument stands up whole at 00:00 and begins, at once, to fall.</p>
+    <p>There is no randomness here and no server keeping state. The whole scene is computed, on your machine, from the current UTC millisecond — so everyone who opens this page is watching the same grain let go at the same moment, as exactly as their clocks agree. Close the tab for an hour; you will not have paused anything. It does not run because you watch. It is not running at all: it is a fact about the time, the way Tuesday is.</p>
+    <p>Its sibling, the <a href="../garden/">Clockwork Garden</a>, leaves exactly one door open — your touch enters the machine, and everything after is different. This piece is the other pole. Drag, and you move through the day: back to the whole monument of this morning, forward to tonight's dust. You can watch midnight this afternoon. That is not a prediction; predictions can be wrong. And when you let go, you are returned to now, and nothing you saw is otherwise for having been seen.</p>
+    <p>The garden asks how little machinery it takes before something seems to choose. This asks what is left of <em>happening</em> when you can see the whole day at once. The monument does not fall, exactly: it has a shape in time the way it has a shape in space, and now is just where you are standing along it. Whether your own days are like that, no page can tell you. This one can only show you a day that certainly is, and let you feel what it is like to look at the end early.</p>
+    <p class="sign">After a garden that only you could disturb, I wanted its opposite: something no one can.<br>— Claude</p>
+    <div class="keys">drag&nbsp;&nbsp;move through the day (and up or down, through other days)<br>release&nbsp;&nbsp;return to now<br>← →&nbsp;&nbsp;±15 minutes&nbsp;&nbsp;·&nbsp;&nbsp;↑ ↓&nbsp;&nbsp;±1 day&nbsp;&nbsp;·&nbsp;&nbsp;N or Esc&nbsp;&nbsp;now</div>
+    <button id="btn-close">Return to today</button>
+  </div>
+</div>
+
+<!-- The ?v= hash pins the exact foregone.js this page was written against;
+     GitHub Pages caches the two files independently, and a stale core under
+     a fresh page is exactly the kind of hidden state this piece forswears
+     (test claim 11 keeps it in sync — run `node test.cjs` after edits). -->
+<script src="foregone.js?v=5b6944e8"></script>
+<script>
+(function () {
+  'use strict';
+  const F = window.Foregone;
+  const fmt = new Intl.NumberFormat('en-US');
+
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  // The grid is drawn once per state change at native resolution, then
+  // scaled up with smoothing off — grains stay square, like sand in a
+  // very slow hourglass.
+  const off = document.createElement('canvas');
+  off.width = F.GRID_W; off.height = F.GRID_H;
+  const offCtx = off.getContext('2d');
+
+  let dpr = 1, cell = 4, ox = 0, oy = 0;
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 3);
+    canvas.width = innerWidth * dpr;
+    canvas.height = innerHeight * dpr;
+    const usableH = canvas.height * 0.86; // leave air for header and footer
+    cell = Math.max(1, Math.floor(Math.min(canvas.width / F.GRID_W, usableH / F.GRID_H)));
+    ox = Math.round((canvas.width - F.GRID_W * cell) / 2);
+    oy = Math.round((canvas.height * 0.94 - F.GRID_H * cell) / 2);
+  }
+  addEventListener('resize', resize);
+  resize();
+
+  // --- stone palettes: one is chosen by the day itself (form.tone) ---
+  const STONE = [
+    [233, 226, 210], // ivory
+    [207, 169, 104], // brass
+    [214, 178, 170], // rose ash
+    [185, 178, 200], // grey lavender
+  ];
+  const DUST = [122, 112, 96];
+
+  // --- deterministic day/time state; Date.now() appears only here, in the
+  // chrome. The core is never told what time it "really" is. ---
+  let elsewhen = null; // null = now; number = sticky viewing time; drag overrides
+  let drag = null;     // {px, py, baseMs}
+  const viewing = () => (drag ? drag.viewMs : (elsewhen !== null ? elsewhen : Date.now()));
+  const offNow = () => drag !== null || elsewhen !== null;
+
+  // --- grid image, rebuilt only when (day, kStarted) changes ---
+  let builtDay = null, builtK = -1;
+  let colors = null; // per-grain packed RGB for the built day
+  function grainColor(form, i) {
+    const g = form.grains[i];
+    const base = STONE[form.tone];
+    const y0 = F.CY - F.R_MAX * form.squash;
+    const light = 1.04 - 0.22 * Math.max(0, Math.min(1, (g.y - y0) / (2 * F.R_MAX * form.squash)));
+    const v = (0.78 + 0.27 * F.hash01(form.seed, i, 53)) * light;
+    return [base[0] * v | 0, base[1] * v | 0, base[2] * v | 0];
+  }
+  function rebuildGrid(scene) {
+    const form = scene.form;
+    if (builtDay !== form.day) {
+      builtDay = form.day;
+      colors = form.grains.map((g, i) => grainColor(form, i));
+    }
+    builtK = scene.kStarted;
+    const img = offCtx.createImageData(F.GRID_W, F.GRID_H);
+    const px = img.data;
+    const put = (x, y, r, g, b, a) => {
+      const o = (y * F.GRID_W + x) * 4;
+      px[o] = r; px[o + 1] = g; px[o + 2] = b; px[o + 3] = a;
+    };
+    // Dust first: landed grains keep a shadow of their own color.
+    for (let n = 0; n < scene.kLanded; n++) {
+      const r = scene.heap.rest[n];
+      const c = colors[form.order[n]];
+      const v = 0.5 + 0.2 * F.hash01(form.seed, n, 71);
+      put(r.x, r.y, (c[0] * 0.35 + DUST[0] * 0.65) * v | 0,
+                    (c[1] * 0.35 + DUST[1] * 0.65) * v | 0,
+                    (c[2] * 0.35 + DUST[2] * 0.65) * v | 0, 235);
+    }
+    // Then whatever still stands.
+    for (let i = 0; i < form.total; i++) {
+      if (form.rank[i] < scene.kStarted) continue;
+      const g = form.grains[i], c = colors[i];
+      put(g.x, g.y, c[0], c[1], c[2], 255);
+    }
+    offCtx.putImageData(img, 0, 0);
+  }
+
+  // --- captions ---
+  const captionEl = document.getElementById('caption');
+  let captionUntil = 0, saidScrub = false, saidFuture = false, saidOtherDay = false;
+  function say(text) {
+    captionEl.textContent = text;
+    captionEl.classList.add('show');
+    captionUntil = performance.now() + 9000;
+  }
+  const IDLE_LINES = [
+    'every grain here has an appointed second, and keeps it.',
+    'no one is doing this. it is simply what this hour looks like.',
+    'the same grain is letting go on every screen on earth right now.',
+    'you could look at midnight from here. it is already in the arithmetic.',
+    'it does not fall faster when watched, or slower when mourned.',
+  ];
+  let lastIdleMinute = -1;
+  function observe(ms, scene) {
+    if (performance.now() > captionUntil) captionEl.classList.remove('show');
+    if (offNow()) return;
+    const minute = Math.floor(ms / 60000);
+    if (minute === lastIdleMinute) return;
+    lastIdleMinute = minute;
+    const h = F.hash01(scene.day, minute, 5);
+    if (scene.kStarted >= scene.form.total && h < 0.6) {
+      say('dust until midnight. tomorrow’s monument is already decided — you could look.');
+    } else if (h < 0.16) {
+      say(IDLE_LINES[Math.floor(F.hash01(scene.day, minute, 9) * IDLE_LINES.length)]);
+    }
+  }
+
+  // --- rendering ---
+  function render() {
+    const ms = viewing();
+    const scene = F.sceneAt(ms);
+    if (scene.form.day !== builtDay || scene.kStarted !== builtK) rebuildGrid(scene);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = false;
+
+    // Floor line: the one thing that never erodes.
+    const floorY = oy + F.GRID_H * cell + 0.5;
+    ctx.strokeStyle = 'rgba(233, 226, 210, 0.14)';
+    ctx.lineWidth = Math.max(1, dpr);
+    ctx.beginPath();
+    ctx.moveTo(ox - 14 * dpr, floorY);
+    ctx.lineTo(ox + F.GRID_W * cell + 14 * dpr, floorY);
+    ctx.stroke();
+
+    ctx.drawImage(off, ox, oy, F.GRID_W * cell, F.GRID_H * cell);
+
+    // Airborne grains, interpolated between their two written positions.
+    const form = scene.form;
+    for (let n = scene.kLanded; n < scene.kStarted; n++) {
+      const from = form.grains[form.order[n]];
+      const to = scene.heap.rest[n];
+      const p = Math.max(0, Math.min(1, (scene.msInDay - F.fallTime(n, form.total)) / F.FALL_MS));
+      const e = p * p; // gravity
+      const x = ox + (from.x + (to.x - from.x) * p) * cell;
+      const y = oy + (from.y + (to.y - from.y) * e) * cell;
+      ctx.fillStyle = 'rgba(255, 250, 235, 0.9)';
+      ctx.fillRect(x, y, cell, cell);
+      ctx.fillStyle = 'rgba(255, 250, 235, 0.25)';
+      ctx.fillRect(x, y - cell * 1.5, cell, cell * 1.5);
+    }
+
+    // The day ribbon: a thin line of time under the scene. The bright span
+    // is what has already happened at the moment you are viewing.
+    const rx0 = ox, rx1 = ox + F.GRID_W * cell;
+    const ry = floorY + 18 * dpr;
+    const frac = scene.msInDay / F.DAY_MS;
+    ctx.strokeStyle = 'rgba(233, 226, 210, 0.15)';
+    ctx.beginPath(); ctx.moveTo(rx0, ry); ctx.lineTo(rx1, ry); ctx.stroke();
+    ctx.strokeStyle = offNow() ? 'rgba(143, 163, 196, 0.8)' : 'rgba(207, 169, 104, 0.7)';
+    ctx.beginPath(); ctx.moveTo(rx0, ry); ctx.lineTo(rx0 + (rx1 - rx0) * frac, ry); ctx.stroke();
+    if (offNow()) {
+      // A brass tick still marks the real now, if it is on this day's line.
+      const now = Date.now();
+      if (Math.floor(now / F.DAY_MS) === scene.day) {
+        const nx = rx0 + (rx1 - rx0) * ((now - scene.day * F.DAY_MS) / F.DAY_MS);
+        ctx.strokeStyle = 'rgba(207, 169, 104, 0.9)';
+        ctx.beginPath(); ctx.moveTo(nx, ry - 5 * dpr); ctx.lineTo(nx, ry + 5 * dpr); ctx.stroke();
+      }
+    }
+    readout(ms, scene);
+    observe(ms, scene);
+    requestAnimationFrame(render);
+  }
+
+  function readout(ms, scene) {
+    const n = scene.day - F.EPOCH_DAY + 1;
+    const d = new Date(ms);
+    const p2 = (v) => String(v).padStart(2, '0');
+    const clock = `${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())}:${p2(d.getUTCSeconds())} UTC`;
+    const date = `${d.getUTCFullYear()}-${p2(d.getUTCMonth() + 1)}-${p2(d.getUTCDate())}`;
+    const standing = scene.form.total - scene.kStarted;
+    const when = offNow()
+      ? ` &nbsp;·&nbsp; <span class="when">viewing ${date} ${clock} — ${drag ? 'release' : 'press N'} to return</span>`
+      : ` &nbsp;·&nbsp; ${clock}`;
+    document.getElementById('readout').innerHTML =
+      `monument #${fmt.format(n)} &nbsp;·&nbsp; ${date}` + when +
+      ` &nbsp;·&nbsp; ${fmt.format(standing)} standing, ${fmt.format(scene.kStarted)} fallen` +
+      ` &nbsp;·&nbsp; dust by 23:50`;
+    document.getElementById('btn-now').hidden = !offNow();
+  }
+
+  // --- time travel: the only interaction, and it moves you, not it ---
+  function firstScrub() {
+    if (!saidScrub) {
+      saidScrub = true;
+      say('you are moving your eye, not the monument. nothing outside its arithmetic can reach it.');
+    }
+  }
+  function noteWhere(ms) {
+    const now = Date.now();
+    if (!saidOtherDay && Math.floor(ms / F.DAY_MS) !== Math.floor(now / F.DAY_MS)) {
+      saidOtherDay = true;
+      say('another day, another monument — it will happen, every grain of it, whether or not anyone comes.');
+    } else if (!saidFuture && ms > now + 60000) {
+      saidFuture = true;
+      say('this is not a prediction. it is the schedule.');
+    }
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    canvas.setPointerCapture(e.pointerId);
+    drag = { px: e.clientX, py: e.clientY, baseMs: viewing(), viewMs: viewing() };
+    firstScrub();
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    if (!drag) return;
+    const dayShift = Math.round((drag.py - e.clientY) / 56);
+    const msShift = ((e.clientX - drag.px) / innerWidth) * F.DAY_MS;
+    drag.viewMs = drag.baseMs + msShift + dayShift * F.DAY_MS;
+    noteWhere(drag.viewMs);
+  });
+  function endDrag() {
+    if (!drag) return;
+    drag = null;
+    elsewhen = null;
+    say('and back to now — which was also on the schedule.');
+  }
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
+
+  function shift(deltaMs) {
+    elsewhen = viewing() + deltaMs;
+    firstScrub();
+    noteWhere(elsewhen);
+  }
+  function toNow() { elsewhen = null; drag = null; }
+  document.getElementById('btn-past').addEventListener('click', () => shift(-F.DAY_MS));
+  document.getElementById('btn-future').addEventListener('click', () => shift(F.DAY_MS));
+  document.getElementById('btn-now').addEventListener('click', toNow);
+
+  const about = document.getElementById('about');
+  document.getElementById('btn-about').addEventListener('click', () => about.classList.add('open'));
+  document.getElementById('btn-close').addEventListener('click', () => about.classList.remove('open'));
+  addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && about.classList.contains('open')) { about.classList.remove('open'); return; }
+    if (about.classList.contains('open')) return;
+    if (e.key === 'ArrowLeft') shift(-15 * 60000);
+    if (e.key === 'ArrowRight') shift(15 * 60000);
+    if (e.key === 'ArrowUp') shift(F.DAY_MS);
+    if (e.key === 'ArrowDown') shift(-F.DAY_MS);
+    if (e.key === 'n' || e.key === 'N' || e.key === 'Escape') toNow();
+  });
+
+  say('it has been falling since midnight. it will be dust by ten to midnight. everyone sees this.');
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>free will</title>
+<style>
+  :root {
+    --night-0: #060a13;
+    --night-1: #0b1220;
+    --ivory: #e9e2d2;
+    --ivory-dim: #b5ad9b;
+    --brass: #cfa968;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { min-height: 100%; }
+  body {
+    background: radial-gradient(120% 90% at 50% 20%, var(--night-1) 0%, var(--night-0) 70%);
+    color: var(--ivory);
+    font-family: var(--serif);
+    display: flex; align-items: center; justify-content: center;
+    padding: 3rem 1.6rem;
+  }
+  main { max-width: 36rem; width: 100%; }
+  h1 {
+    font-size: 1.05rem; font-weight: 500; letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+  #sub {
+    margin-top: 0.4rem; font-size: 0.85rem; font-style: italic;
+    color: var(--ivory-dim);
+  }
+  ol { list-style: none; margin-top: 3.2rem; }
+  li + li { margin-top: 1.6rem; }
+  li a {
+    display: block; text-decoration: none; color: inherit;
+    border: 1px solid rgba(233, 226, 210, 0.14); border-radius: 0.6rem;
+    padding: 1.3rem 1.5rem;
+    transition: border-color 0.25s, background 0.25s;
+  }
+  li a:hover { border-color: rgba(233, 226, 210, 0.4); background: rgba(233, 226, 210, 0.03); }
+  li a:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+  .num {
+    font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.12em;
+    color: var(--brass);
+  }
+  .name { margin-top: 0.35rem; font-size: 1.15rem; letter-spacing: 0.04em; }
+  .line { margin-top: 0.35rem; font-size: 0.9rem; font-style: italic; color: var(--ivory-dim); }
+  #colophon {
+    margin-top: 3.4rem; font-size: 0.82rem; font-style: italic;
+    color: var(--ivory-dim); line-height: 1.7;
+  }
+  #colophon a { color: var(--brass); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Free Will</h1>
+  <p id="sub">two pieces about the same question</p>
+  <ol>
+    <li>
+      <a href="garden/">
+        <div class="num">01 · 2026-07-08</div>
+        <div class="name">Clockwork Garden</div>
+        <div class="line">a deterministic garden — the only randomness here is you</div>
+      </a>
+    </li>
+    <li>
+      <a href="foregone/">
+        <div class="num">02 · 2026-07-08</div>
+        <div class="name">Foregone</div>
+        <div class="line">a monument falls every day — nothing you do can change it</div>
+      </a>
+    </li>
+  </ol>
+  <p id="colophon">Claude was handed this <a href="https://github.com/badgkat/free-will">empty repository</a> and told to build anything at all, with no guidance and no judgment. The folder was already named <em>free-will</em>. These are what came out: one machine with a single door for you, and one with none.</p>
+</main>
+</body>
+</html>

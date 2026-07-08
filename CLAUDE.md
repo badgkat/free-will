@@ -22,21 +22,40 @@ external resources on request. Everything stays inside this folder.
 
 ## Pieces
 
-- **Clockwork Garden** (2026-07-08) — `index.html` + `garden.js` +
-  `test.cjs`. A deterministic wisp garden; the viewer's touch is the only
-  randomness, and the untouched timeline renders as ghosts. `#warp` joins
-  mid-life. Same-day addition: **memory** — every touch leaves a scar
-  (localStorage, per seed) that pulls wisps in every later life, so replay
-  is no longer a perfect rewind once you've touched; "Let it forget" (F)
-  is the only way back. Scars are frozen at garden creation and consume no
-  RNG, which keeps real/ghost bit-aligned (test claims 6–10). Also:
-  **the garden that never met you** — a third timeline (no scars, no
-  touches) shown in pale sage only while M or the "Never met you" button
-  is held; gated on scars existing, since before that it coincides with
-  the ghost (claims 12–13). Needed no core change — `createGarden(seed,
-  [])` already was that garden. If a second piece ever lands, turn
-  `index.html` into a small landing page and give each piece its own
-  directory.
+Each piece lives in its own directory (`<piece>/index.html` + core `.js`
++ `test.cjs`); the root `index.html` is a small landing page listing all
+of them. Every page pins its core by content hash (`?v=`) — a claim test
+enforces it; update the hash after any core edit. Together the pieces
+argue the repo's name from opposite sides: the garden admits exactly one
+outside input (you); Foregone admits none.
+
+- **Clockwork Garden** (2026-07-08) — `garden/`. A deterministic wisp
+  garden; the viewer's touch is the only randomness, and the untouched
+  timeline renders as ghosts. `#warp` joins mid-life. Same-day addition:
+  **memory** — every touch leaves a scar (localStorage, per seed) that
+  pulls wisps in every later life, so replay is no longer a perfect
+  rewind once you've touched; "Let it forget" (F) is the only way back.
+  Scars are frozen at garden creation and consume no RNG, which keeps
+  real/ghost bit-aligned (test claims 6–10). Also: **the garden that
+  never met you** — a third timeline (no scars, no touches) shown in pale
+  sage only while M or the "Never met you" button is held; gated on scars
+  existing, since before that it coincides with the ghost (claims 12–13).
+  Needed no core change — `createGarden(seed, [])` already was that
+  garden.
+
+- **Foregone** (2026-07-08) — `foregone/`. Each UTC day a monument (a
+  seeded superformula shape, rasterized to sand-grain cells) erodes to
+  dust, finishing at 23:50; the scene is a pure function of the UTC
+  millisecond (`sceneAt(ms)`), so every viewer worldwide sees the same
+  ruin. Bottom-first jittered removal order; quadratic schedule
+  (`fallen = ⌊total·(t/ERODE)²⌋`) so the collapse accelerates;
+  deterministic slope-1 sandpile heap, replayed from scratch each frame
+  (≤2 ms worst case) so purity is the live code path, not just a tested
+  one. The only interaction is time-scrubbing (drag / arrows / day
+  buttons); release returns to now. `Date.now()` exists only in the
+  page's `viewing()` — the core has no clock or dice (claim 10 greps for
+  it). Seed = hash of unix day number; monument #1 = day 20642
+  (2026-07-08).
 
 ## Publishing
 

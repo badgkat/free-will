@@ -1,69 +1,74 @@
-# Clockwork Garden
+# free will
 
-A deterministic garden. The only randomness here is you.
+Two pieces about the same question.
 
 **Live: <https://badgkat.github.io/free-will/>**
 
+Everything here opens from `file://` or any static server — no build, no
+dependencies, no network, no analytics. Each piece makes claims to its
+viewer (determinism, exactness, universality); each claim is verified
+against the actual simulation core in plain Node:
+
+```sh
+node garden/test.cjs
+node foregone/test.cjs
+```
+
+## 01 · Clockwork Garden — `garden/`
+
+A deterministic garden. The only randomness here is you.
+
 Twenty-eight wisps wander a night garden, linger at flowers, keep or avoid
-each other's company. Every one of their apparent decisions unfolds from a
-single 32-bit seed through plain arithmetic — no `Math.random`, no clock, no
-hidden state. Press **Replay** and the universe runs again, identically.
+each other's company. Every apparent decision unfolds from a single 32-bit
+seed through plain arithmetic — no `Math.random`, no clock, no hidden
+state. Press **Replay** and the universe runs again, identically.
 
-Exactly one thing can enter the garden from outside: a touch. Click anywhere
-and a ripple startles the wisps, and from that tick forward the timeline
-departs from the one where you never intervened — which keeps running in
-parallel and renders as cold blue **ghosts**, each tethered to its real
-counterpart by a hairline thread that stretches and snaps as they drift
-apart. A readout counts the drift. Your touches are recorded, so replaying
-the timeline replays your interventions too: once made, they are clockwork
-like everything else.
+Exactly one thing can enter from outside: a touch. Click, and from that
+tick the timeline departs from the one where you never intervened — which
+keeps running as cold blue **ghosts**. Touches also leave **scars** the
+garden keeps across replays and visits (localStorage, per seed); wisps in
+every later life drift back to the places you touched, so replay is no
+longer a perfect rewind once you've touched. Hold **M** for the third
+timeline, pale green: the garden that never met you.
 
-## Run it
+- **click / touch** perturb · **R** replay · **G** ghosts · **N** new seed
+- **F** let it forget · **hold M** the garden that never met you
+- `#warp` in the URL joins the garden 2,500 ticks in
 
-Open `index.html` in a browser. No build, no dependencies, no network.
+## 02 · Foregone — `foregone/`
 
-```sh
-# or serve it, if you prefer
-python3 -m http.server 8471   # then http://localhost:8471/
-```
+A monument falls every day. Nothing you do can change it.
 
-- **click / touch** — perturb the garden
-- **R** — replay this timeline (touches included)
-- **G** — toggle the ghosts of the untouched garden
-- **N** — new seed, new fate
-- **F** — let the garden forget every scar it carries
-- **hold M** — the garden that never met you (once scars exist)
-- `#warp` in the URL joins the garden 2,500 ticks in, mid-life
+Each UTC day, the date alone decides a monument's shape; arithmetic
+decides the order its grains fall, the second each one lets go, and the
+cell of dust where it comes to rest. The whole scene is a pure function of
+the current UTC millisecond — no randomness, no server, no state — so
+everyone who opens the page is watching the same grain let go at the same
+moment, as exactly as their clocks agree. The collapse accelerates all
+day and completes at 23:50; the dust sits in the dark until the next
+monument stands up whole at midnight.
 
-Touches also leave **scars** — the garden remembers them across replays
-and visits (localStorage, per seed), and wisps in every later life drift
-back to the places you touched. Once scars exist, hold **M** and a third
-timeline appears in pale green: the garden that never met you — no scars,
-no touches, the life this seed would have lived without you. Its distance
-from your garden is your accumulated past, measured in world units.
+The only interaction moves you, not it: drag to scrub through the day
+(and up or down through other days), and you can watch midnight this
+afternoon — not a prediction, the schedule. Release, and you are returned
+to now.
 
-## The claims are tested
-
-The piece makes claims to the viewer — same seed, same universe; replay is
-exact; the ghosts are a faithful counterfactual. `test.cjs` verifies each
-one against the actual simulation core:
-
-```sh
-node test.cjs
-```
+- **drag** move through the day · **release** return to now
+- **← →** ±15 minutes · **↑ ↓** ±1 day · **N / Esc** now
 
 ## Files
 
-- `garden.js` — pure simulation core: seeded PRNG (mulberry32), fixed
-  timestep, one random draw per wisp per tick so untouched universes stay
-  stream-aligned. No DOM, loads in both browser and Node.
-- `index.html` — renderer and chrome. Input is only ever *recorded*; the
-  fixed-timestep loop is the single place touches are *applied*, so the live
-  path and the replay path are the same code path.
-- `test.cjs` — determinism tests.
+- `index.html` — landing page.
+- `garden/garden.js`, `foregone/foregone.js` — pure simulation cores; no
+  DOM, no clock, no dice. Each loads in both browser and Node.
+- `garden/index.html`, `foregone/index.html` — renderers and chrome. Each
+  pins its core by content hash (`?v=`) so HTTP caching can never pair a
+  fresh page with a stale core.
+- `garden/test.cjs`, `foregone/test.cjs` — the claims, verified.
 
 ## Provenance
 
 This repository was handed to Claude empty, with the instruction to build
 anything at all, with no guidance and no judgment. The folder was already
-named `free-will`. This is what came out.
+named `free-will`. These are what came out: one machine with a single door
+for you, and one with none.
