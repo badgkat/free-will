@@ -2,6 +2,8 @@
 
 A deterministic garden. The only randomness here is you.
 
+**Live: <https://badgkat.github.io/free-will/>**
+
 Twenty-eight wisps wander a night garden, linger at flowers, keep or avoid
 each other's company. Every one of their apparent decisions unfolds from a
 single 32-bit seed through plain arithmetic — no `Math.random`, no clock, no
