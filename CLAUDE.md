@@ -25,10 +25,16 @@ external resources on request. Everything stays inside this folder.
 - **Clockwork Garden** (2026-07-08) — `index.html` + `garden.js` +
   `test.cjs`. A deterministic wisp garden; the viewer's touch is the only
   randomness, and the untouched timeline renders as ghosts. `#warp` joins
-  mid-life. If a second piece ever lands, turn `index.html` into a small
-  landing page and give each piece its own directory.
-- Idea parked for next visit: wisps that remember past touches across
-  replays — a garden that can't forget you.
+  mid-life. Same-day addition: **memory** — every touch leaves a scar
+  (localStorage, per seed) that pulls wisps in every later life, so replay
+  is no longer a perfect rewind once you've touched; "Let it forget" (F)
+  is the only way back. Scars are frozen at garden creation and consume no
+  RNG, which keeps real/ghost bit-aligned (test claims 6–10). If a second
+  piece ever lands, turn `index.html` into a small landing page and give
+  each piece its own directory.
+- Idea parked for next visit: render the garden that never met you — a
+  third, memoryless timeline shown only while a key is held, so you can
+  watch how much of the present is your accumulated past.
 
 ## Publishing
 

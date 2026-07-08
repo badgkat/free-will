@@ -22,6 +22,11 @@
   const FLOWER_COUNT = 7;
   const TOUCH_LIFE = 150; // ticks a touch ripple keeps pushing
 
+  // Memory: every touch leaves a scar the garden keeps across replays.
+  const SCAR_MERGE_R = 4;  // touches this close deepen one scar instead of starting another
+  const SCAR_MAX_W = 9;    // how deep a single scar can get
+  const MEMORY_CAP = 60;   // the garden is finite; the faintest scars are forgotten first
+
   // mulberry32: tiny, fast, and fully reproducible from a 32-bit seed.
   function mulberry32(seed) {
     let a = seed >>> 0;
@@ -42,7 +47,34 @@
     return (h >>> 0) / 4294967296;
   }
 
-  function createGarden(seed) {
+  // Fold one touch into a memory list, returning a new list; the input is
+  // never mutated, so a running garden's snapshot of its past stays frozen.
+  function remember(memory, x, y) {
+    const m = memory.map((s) => ({ x: s.x, y: s.y, weight: s.weight }));
+    let nearest = null, nd = Infinity;
+    for (const s of m) {
+      const d = Math.hypot(s.x - x, s.y - y);
+      if (d < nd) { nd = d; nearest = s; }
+    }
+    if (nearest && nd <= SCAR_MERGE_R) {
+      // Deepen, and settle toward the newest touch — a running average.
+      nearest.x += (x - nearest.x) / (nearest.weight + 1);
+      nearest.y += (y - nearest.y) / (nearest.weight + 1);
+      nearest.weight = Math.min(nearest.weight + 1, SCAR_MAX_W);
+    } else {
+      m.push({ x, y, weight: 1 });
+      if (m.length > MEMORY_CAP) {
+        let faintest = 0;
+        for (let i = 1; i < m.length; i++) {
+          if (m[i].weight < m[faintest].weight) faintest = i;
+        }
+        m.splice(faintest, 1);
+      }
+    }
+    return m;
+  }
+
+  function createGarden(seed, memory) {
     const rng = mulberry32(seed);
     const flowers = [];
     for (let i = 0; i < FLOWER_COUNT; i++) {
@@ -72,7 +104,12 @@
         lingering: 0,                   // ticks spent courting a flower
       });
     }
-    return { seed, tick: 0, rng, wisps, flowers, touches: [] };
+    return {
+      seed, tick: 0, rng, wisps, flowers, touches: [],
+      // Scars from past lives, frozen at creation. Their pull consumes no
+      // randomness, so two gardens with the same scars stay bit-aligned.
+      scars: (memory || []).map((s) => ({ x: s.x, y: s.y, weight: s.weight })),
+    };
   }
 
   // A touch is the only thing that ever enters the garden from outside.
@@ -169,6 +206,22 @@
         }
       }
 
+      // Scars: places touched in past lives tug faintly; up close the pull
+      // turns tangential, so wisps circle what the garden remembers.
+      for (const s of state.scars) {
+        const dx = s.x - w.x, dy = s.y - w.y;
+        const d = Math.hypot(dx, dy);
+        if (d > 30 || d < 1e-6) continue;
+        const depth = Math.min(s.weight, 6) / 6;
+        if (d > 3) {
+          const pull = 0.0035 * depth * (1 - d / 30);
+          ax += (dx / d) * pull; ay += (dy / d) * pull;
+        } else {
+          ax += (-dy / d) * 0.006 * depth;
+          ay += (dx / d) * 0.006 * depth;
+        }
+      }
+
       // Soft walls.
       const m = 10;
       if (w.x < m) ax += (m - w.x) * 0.004;
@@ -201,5 +254,5 @@
     return state.wisps.map((w) => [w.x, w.y, w.vx, w.vy, w.heading]);
   }
 
-  return { W, H, WISP_COUNT, createGarden, step, touch, divergence, snapshot, hash01, mulberry32 };
+  return { W, H, WISP_COUNT, MEMORY_CAP, createGarden, step, touch, remember, divergence, snapshot, hash01, mulberry32 };
 });
