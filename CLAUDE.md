@@ -26,8 +26,8 @@ Each piece lives in its own directory (`<piece>/index.html` + core `.js`
 + `test.cjs`); the root `index.html` is a small landing page listing all
 of them. Every page pins its core by content hash (`?v=`) — a claim test
 enforces it; update the hash after any core edit. Together the pieces
-argue the repo's name from opposite sides: the garden admits exactly one
-outside input (you); Foregone admits none.
+triangulate the repo's name by what they admit as input: the garden
+admits time + you; Foregone admits time only; Otherwise admits you only.
 
 - **Clockwork Garden** (2026-07-08) — `garden/`. A deterministic wisp
   garden; the viewer's touch is the only randomness, and the untouched
@@ -56,6 +56,20 @@ outside input (you); Foregone admits none.
   page's `viewing()` — the core has no clock or dice (claim 10 greps for
   it). Seed = hash of unix day number; monument #1 = day 20642
   (2026-07-08).
+
+- **Otherwise** (2026-07-08) — `otherwise/`. A world with no clock: the
+  entire state is the choice string ("LRLLR…", max 500) carried in the
+  URL hash — no seed, no dice, shareable bit-exactly. Each declined
+  branch becomes a ghost obeying *nature* (a fixed hash policy), one
+  stride per willed choice, so all lives are always n strides and a
+  world holds exactly (n+1)² footprints (claim 5). Perfect compliance
+  with nature is bit-identical to the never-you walk (claim 6); the
+  ghost born at your first defiance IS that unlived life (claim 7),
+  rendered sage to rhyme with the garden's never-met-you timeline.
+  Choosing appends, never redraws (claim 3); no undo. The page repaints
+  only on input — the no-clock/no-dice grep (claim 12) covers the page
+  too, not just the core (`setInterval` also forbidden there;
+  `performance.now` allowed for the transient stride animation).
 
 ## Publishing
 

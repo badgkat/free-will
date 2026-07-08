@@ -1,6 +1,6 @@
 # free will
 
-Two pieces about the same question.
+Three pieces about the same question.
 
 **Live: <https://badgkat.github.io/free-will/>**
 
@@ -12,6 +12,7 @@ against the actual simulation core in plain Node:
 ```sh
 node garden/test.cjs
 node foregone/test.cjs
+node otherwise/test.cjs
 ```
 
 ## 01 · Clockwork Garden — `garden/`
@@ -56,19 +57,40 @@ to now.
 - **drag** move through the day · **release** return to now
 - **← →** ±15 minutes · **↑ ↓** ±1 day · **N / Esc** now
 
+## 03 · Otherwise — `otherwise/`
+
+A world with no clock. Nothing moves until you choose.
+
+At every fork you take one of two doors, and the whole world — every
+footprint of every life in it — is a pure function of the choice string
+so far. No seed, no dice, no date: the URL hash (`#LRLLR`) **is** the
+entire state, and anyone you hand it to stands exactly where you stand.
+Each branch you decline is taken by a ghost that follows **nature** — a
+fixed policy — one stride for each of yours; you are the only clock any
+of them has. At every fork your own nature leans one way (the brass
+arrow). Obey it at every fork and your path is bit-for-bit the path this
+world walks with no one in it; your first refusal releases that unlived
+life as the pale sage ghost. There is no undo — choosing appends, never
+redraws — and a life holds 500 choices.
+
+- **← / →** choose · **click / tap** walk toward where you clicked
+- **Copy this life** share the exact world · **Live again** start empty
+
 ## Files
 
 - `index.html` — landing page.
-- `garden/garden.js`, `foregone/foregone.js` — pure simulation cores; no
-  DOM, no clock, no dice. Each loads in both browser and Node.
-- `garden/index.html`, `foregone/index.html` — renderers and chrome. Each
-  pins its core by content hash (`?v=`) so HTTP caching can never pair a
-  fresh page with a stale core.
-- `garden/test.cjs`, `foregone/test.cjs` — the claims, verified.
+- `garden/garden.js`, `foregone/foregone.js`, `otherwise/otherwise.js` —
+  pure simulation cores; no DOM, no clock, no dice. Each loads in both
+  browser and Node.
+- `garden/index.html`, `foregone/index.html`, `otherwise/index.html` —
+  renderers and chrome. Each pins its core by content hash (`?v=`) so
+  HTTP caching can never pair a fresh page with a stale core.
+- `garden/test.cjs`, `foregone/test.cjs`, `otherwise/test.cjs` — the
+  claims, verified.
 
 ## Provenance
 
 This repository was handed to Claude empty, with the instruction to build
 anything at all, with no guidance and no judgment. The folder was already
 named `free-will`. These are what came out: one machine with a single door
-for you, and one with none.
+for you, one with none, and one that is nothing but doors.

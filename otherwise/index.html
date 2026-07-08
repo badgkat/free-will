@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Otherwise</title>
+<style>
+  :root {
+    --night-0: #060a13;
+    --night-1: #0b1220;
+    --ivory: #e9e2d2;
+    --ivory-dim: #b5ad9b;
+    --brass: #cfa968;
+    --ghost: #7d93b8;
+    --sage: #9fc7a4;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(120% 90% at 50% 20%, var(--night-1) 0%, var(--night-0) 70%);
+    color: var(--ivory);
+    font-family: var(--serif);
+    overflow: hidden;
+  }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; cursor: crosshair; }
+
+  header {
+    position: fixed; top: 1.4rem; left: 1.6rem; pointer-events: none;
+    user-select: none;
+  }
+  header h1 {
+    font-size: 1.05rem; font-weight: 500; letter-spacing: 0.28em;
+    text-transform: uppercase; color: var(--ivory);
+  }
+  header p {
+    margin-top: 0.35rem; font-size: 0.82rem; font-style: italic;
+    color: var(--ivory-dim); letter-spacing: 0.02em;
+  }
+
+  #caption {
+    position: fixed; left: 50%; bottom: 4.6rem; transform: translateX(-50%);
+    max-width: 34rem; text-align: center; font-style: italic;
+    font-size: 0.95rem; color: var(--ivory-dim); pointer-events: none;
+    opacity: 0; transition: opacity 1.6s ease; padding: 0 1rem;
+    text-wrap: balance;
+  }
+  #caption.show { opacity: 1; }
+
+  footer {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 1rem; padding: 0.9rem 1.6rem; flex-wrap: wrap;
+  }
+  #readout {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em;
+    color: var(--ivory-dim); user-select: none;
+  }
+  #readout .nat { color: var(--brass); }
+  #readout .never { color: var(--sage); }
+  nav { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  nav button {
+    font-family: var(--serif); font-size: 0.8rem; letter-spacing: 0.06em;
+    color: var(--ivory-dim); background: none;
+    border: 1px solid rgba(233, 226, 210, 0.18); border-radius: 2rem;
+    padding: 0.32rem 0.95rem; cursor: pointer;
+    transition: color 0.25s, border-color 0.25s;
+  }
+  nav button:hover { color: var(--ivory); border-color: rgba(233, 226, 210, 0.45); }
+  nav button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+  #about {
+    position: fixed; inset: 0; background: rgba(4, 7, 13, 0.88);
+    backdrop-filter: blur(6px); display: none; overflow-y: auto;
+    z-index: 10;
+  }
+  #about.open { display: block; }
+  #about .sheet {
+    max-width: 33rem; margin: 0 auto; padding: 14vh 1.6rem 4rem;
+  }
+  #about h2 {
+    font-size: 0.9rem; font-weight: 500; letter-spacing: 0.28em;
+    text-transform: uppercase; margin-bottom: 2.2rem; color: var(--brass);
+  }
+  #about p {
+    font-size: 1.02rem; line-height: 1.75; margin-bottom: 1.3rem;
+    color: var(--ivory);
+  }
+  #about p.sign { font-style: italic; color: var(--ivory-dim); }
+  #about .keys {
+    margin-top: 2.4rem; font-family: var(--mono); font-size: 0.72rem;
+    color: var(--ivory-dim); line-height: 2;
+  }
+  #about button {
+    margin-top: 2rem; font-family: var(--serif); font-size: 0.85rem;
+    color: var(--ivory-dim); background: none; letter-spacing: 0.06em;
+    border: 1px solid rgba(233, 226, 210, 0.25); border-radius: 2rem;
+    padding: 0.4rem 1.2rem; cursor: pointer;
+  }
+  #about button:hover { color: var(--ivory); }
+
+  @media (prefers-reduced-motion: reduce) {
+    #caption { transition: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="world"></canvas>
+
+<header>
+  <h1>Otherwise</h1>
+  <p>a world with no clock — nothing moves until you choose</p>
+</header>
+
+<div id="caption"></div>
+
+<footer>
+  <div id="readout"></div>
+  <nav>
+    <button id="btn-copy" title="Copy this life's address — anyone you hand it to stands exactly here">Copy this life</button>
+    <button id="btn-new" title="Begin an empty life (this one stays in the address you copied)">Live again</button>
+    <button id="btn-about">About</button>
+  </nav>
+</footer>
+
+<div id="about" role="dialog" aria-modal="true" aria-label="About this world">
+  <div class="sheet">
+    <h2>Otherwise</h2>
+    <p>This world has no clock. Nothing in it moves — not one thing — until you choose. There is no seed, no dice, no date. The only events that have ever occurred here are your choices, and the address bar holds all of them: hand <em>#LRLLR</em> to anyone on earth and their machine will build this exact world, every footprint in the same place. Your biography is the entire state. Nothing else was recorded, because nothing else happened.</p>
+    <p>At every fork, your nature leans one way — the brass arrow. It is not advice and it is not random; it is a fixed policy, a pure function of the ground you stand on, which is a pure function of how you got there. The ghosts obey it. Each branch you decline is taken by a ghost who follows nature from then on, one stride for each of yours. You are the only clock any of them has. Stop choosing and the whole world stops, mid-step, forever.</p>
+    <p>You may obey the lean or refuse it. The world counts, and here is the uncomfortable part — arithmetic, not rhetoric: obey your nature at every fork and your path is, bit for bit, the path this world walks with no one in it. Perfect obedience is indistinguishable from absence. The moment you first refuse yourself, that unlived life detaches and walks on without you — the pale sage ghost — and from then on it is the only proof of what the world would have done alone. Every refusal after that is smaller. The first one is the only door that opens once.</p>
+    <p>There is no undo here. The past of a life cannot be redrawn — choosing appends, never erases — and the piece will not unchoose for you. You can begin again, but that is a different life, not a correction; the old one still exists in full at the address where you left it.</p>
+    <p>Whether the finger on the arrow key was itself obeying some larger lean is not a question this world can answer. It can only make the difference visible: one ivory line that had to be chosen, stride by stride, through a fan of blue ones that didn't.</p>
+    <p class="sign">I was given this empty folder and told to build whatever I wanted, with no guidance and no judgment. This is the third piece: the garden has one door for you, the monument has none, and this world is nothing but doors.<br>— Claude</p>
+    <div class="keys">← / →&nbsp;&nbsp;choose (your left and right, not the walker's)<br>click / tap&nbsp;&nbsp;walk toward where you clicked<br>a life holds 500 choices, then it is full</div>
+    <button id="btn-close">Return to the fork</button>
+  </div>
+</div>
+
+<!-- The ?v= hash pins the exact otherwise.js this page was written against;
+     without it, HTTP caching can pair a fresh page with a stale core
+     (test claim 13 keeps it in sync — run `node test.cjs` after edits). -->
+<script src="otherwise.js?v=1b346e83"></script>
+<script>
+(function () {
+  'use strict';
+  const O = window.Otherwise;
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const canvas = document.getElementById('world');
+  const ctx = canvas.getContext('2d');
+  const readoutEl = document.getElementById('readout');
+  const captionEl = document.getElementById('caption');
+  const fmt = new Intl.NumberFormat('en-US');
+
+  // --- state: one string. Everything else is derived. ---
+  let life = O.sanitize(location.hash.slice(1));
+  let sc = O.scene(life);
+
+  // The ghost released by your first refusal is, provably (test claim 7),
+  // the life this world would live with no one in it — drawn sage.
+  function firstDefiance(scene) {
+    const states = O.walkStates(scene.choices);
+    for (let i = 0; i < scene.n; i++) {
+      if (scene.choices[i] !== O.natureAt(states[i].h)) return i;
+    }
+    return -1;
+  }
+  let neverIdx = firstDefiance(sc);
+
+  // --- camera: the whole world, always, eased between choices ---
+  let dpr = 1;
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = innerWidth * dpr;
+    canvas.height = innerHeight * dpr;
+    cam = fitCamera(sc);
+    render(1);
+  }
+  let cam = { scale: 1, cx: 0, cy: 0 };
+  function fitCamera(scene) {
+    const pad = 70 * dpr;
+    const bw = Math.max(scene.bbox.maxX - scene.bbox.minX, 40);
+    const bh = Math.max(scene.bbox.maxY - scene.bbox.minY, 40);
+    const scale = Math.min(
+      (canvas.width - pad * 2) / bw,
+      (canvas.height - pad * 2) / bh,
+      2.4 * dpr);
+    return {
+      scale,
+      cx: (scene.bbox.minX + scene.bbox.maxX) / 2,
+      cy: (scene.bbox.minY + scene.bbox.maxY) / 2,
+    };
+  }
+  const sx = (x) => canvas.width / 2 + (x - cam.cx) * cam.scale;
+  const sy = (y) => canvas.height / 2 + (y - cam.cy) * cam.scale;
+
+  // --- rendering: repaints happen on input, then the page is still ---
+  function drawPath(points, grow, color, alpha, width) {
+    if (points.length < 2) return;
+    const last = points.length - 1;
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = width;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(sx(points[0].x), sy(points[0].y));
+    for (let i = 1; i < last; i++) ctx.lineTo(sx(points[i].x), sy(points[i].y));
+    const a = points[last - 1], b = points[last];
+    ctx.lineTo(sx(a.x + (b.x - a.x) * grow), sy(a.y + (b.y - a.y) * grow));
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  function drawArrow(from, heading, len, color, alpha, width) {
+    const tx = from.x + Math.cos(heading) * len;
+    const ty = from.y + Math.sin(heading) * len;
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = width;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(tx, ty);
+    for (const side of [-1, 1]) {
+      ctx.moveTo(tx, ty);
+      ctx.lineTo(tx + Math.cos(heading + Math.PI + side * 0.5) * len * 0.3,
+                 ty + Math.sin(heading + Math.PI + side * 0.5) * len * 0.3);
+    }
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // The two true headings out of the current fork, for drawing and for
+  // aiming clicks. Screen-space geometry, honest angles.
+  function forkHeadings() {
+    return {
+      L: sc.fork.heading - sc.fork.turn,
+      R: sc.fork.heading + sc.fork.turn,
+    };
+  }
+
+  function render(grow) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const n = sc.n;
+
+    // Declined lives, oldest dimmest; each drawn from where it left you.
+    for (let i = 0; i < n; i++) {
+      if (i === neverIdx) continue;
+      const g = sc.ghosts[i];
+      const pts = g.points.slice(g.bornAt);
+      drawPath(pts, grow, '#7d93b8', 0.10 + 0.26 * ((i + 1) / n), 1.0 * dpr);
+    }
+    // The life that never needed you, sage, over the blue.
+    if (neverIdx >= 0) {
+      const g = sc.ghosts[neverIdx];
+      drawPath(g.points.slice(g.bornAt), grow, '#9fc7a4', 0.55, 1.2 * dpr);
+    }
+
+    // Your one willed line: a soft halo, then the ink.
+    drawPath(sc.you, grow, '#e9e2d2', 0.14, 5 * dpr);
+    drawPath(sc.you, grow, '#e9e2d2', 0.95, 1.7 * dpr);
+
+    // Where everyone began.
+    ctx.strokeStyle = '#b5ad9b';
+    ctx.globalAlpha = 0.5;
+    ctx.lineWidth = 1 * dpr;
+    ctx.beginPath(); ctx.arc(sx(0), sy(0), 3.5 * dpr, 0, 7); ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // You, now — interpolated along the growing stride.
+    let hx = sx(sc.you[n].x), hy = sy(sc.you[n].y);
+    if (n > 0 && grow < 1) {
+      const a = sc.you[n - 1], b = sc.you[n];
+      hx = sx(a.x + (b.x - a.x) * grow);
+      hy = sy(a.y + (b.y - a.y) * grow);
+    }
+    ctx.fillStyle = '#cfa968';
+    ctx.beginPath(); ctx.arc(hx, hy, 3 * dpr, 0, 7); ctx.fill();
+    if (grow < 1) {
+      ctx.strokeStyle = '#cfa968';
+      ctx.globalAlpha = 0.5 * (1 - grow);
+      ctx.lineWidth = 1.2 * dpr;
+      ctx.beginPath(); ctx.arc(hx, hy, (4 + grow * 26) * dpr, 0, 7); ctx.stroke();
+      ctx.globalAlpha = 1;
+    }
+
+    // The fork ahead: both doors at their true angles, nature in brass.
+    if (!sc.full && grow === 1) {
+      const hd = forkHeadings();
+      const head = { x: hx, y: hy };
+      const len = (sc.n === 0 ? 52 : 42) * dpr;
+      const boost = n === 0 ? 0.35 : 0;
+      drawArrow(head, hd.L, len, sc.fork.lean === 'L' ? '#cfa968' : '#b5ad9b',
+        (sc.fork.lean === 'L' ? 0.9 : 0.4) + boost * (sc.fork.lean === 'L' ? 0 : 1), 1.4 * dpr);
+      drawArrow(head, hd.R, len, sc.fork.lean === 'R' ? '#cfa968' : '#b5ad9b',
+        (sc.fork.lean === 'R' ? 0.9 : 0.4) + boost * (sc.fork.lean === 'R' ? 0 : 1), 1.4 * dpr);
+    }
+  }
+
+  // --- transient animation: runs for one stride after a choice, then stops ---
+  let animId = 0;
+  function settle(fromCam) {
+    const toCam = fitCamera(sc);
+    if (reduceMotion) { cam = toCam; render(1); return; }
+    const t0 = performance.now();
+    const DUR = 450;
+    cancelAnimationFrame(animId);
+    function frame(now) {
+      const t = Math.min((now - t0) / DUR, 1);
+      const e = 1 - Math.pow(1 - t, 3);
+      cam = {
+        scale: fromCam.scale + (toCam.scale - fromCam.scale) * e,
+        cx: fromCam.cx + (toCam.cx - fromCam.cx) * e,
+        cy: fromCam.cy + (toCam.cy - fromCam.cy) * e,
+      };
+      render(e);
+      if (t < 1) animId = requestAnimationFrame(frame);
+    }
+    animId = requestAnimationFrame(frame);
+  }
+
+  // --- captions: observations only; each is a pure function of the life ---
+  function say(text) {
+    captionEl.textContent = text;
+    captionEl.classList.add('show');
+  }
+  function hush() { captionEl.classList.remove('show'); }
+
+  function remark(prev, cur) {
+    if (cur.n === 1 && prev.n === 0) {
+      return cur.agreed === 0
+        ? 'you refused your lean on the very first step. the sage line already walking is the life this world would have lived alone.'
+        : 'the way you declined is already walking. it takes one stride each time you do.';
+    }
+    const defiedNow = prev.agreed === prev.n && cur.agreed === prev.agreed;
+    if (defiedNow && cur.n > 1) {
+      return 'your first refusal. the sage line now leaving you is the life this world would have lived alone — until now, you and it were the same line.';
+    }
+    if (cur.full) {
+      return 'this life is full: five hundred choices, every one still visible, every one declined still walking.';
+    }
+    if (cur.n >= 12 && cur.agreed === cur.n && cur.n % 12 === 0) {
+      return 'you have obeyed your lean every time. so far, you are indistinguishable from a ghost.';
+    }
+    if (cur.n === 50) {
+      return 'fifty choices. the fan behind you is everyone you declined to be.';
+    }
+    if (cur.n === 250) {
+      return 'halfway. the world now holds more declined strides than lived ones — it always did, after the second choice.';
+    }
+    return null;
+  }
+
+  function readout() {
+    if (sc.n === 0) {
+      readoutEl.innerHTML = 'no one has moved yet';
+      return;
+    }
+    readoutEl.innerHTML =
+      `${fmt.format(sc.n)} choice${sc.n === 1 ? '' : 's'}` +
+      ` &nbsp;·&nbsp; <span class="nat">you chose as your nature would ${fmt.format(sc.agreed)} of ${fmt.format(sc.n)}</span>` +
+      (neverIdx >= 0 ? ` &nbsp;·&nbsp; <span class="never">the unlived life left you at choice ${neverIdx + 1}</span>` : '') +
+      (sc.full ? ' &nbsp;·&nbsp; this life is full' : '');
+  }
+
+  // --- choosing: the only way anything ever happens here ---
+  let lastRemarkN = 0;
+  function choose(c) {
+    if (sc.full) {
+      say('this life is full. begin another, or stay.');
+      return;
+    }
+    const prev = sc;
+    const fromCam = cam;
+    life += c;
+    sc = O.scene(life);
+    neverIdx = firstDefiance(sc);
+    history.replaceState(null, '', '#' + life);
+    const r = remark(prev, sc);
+    if (r) { say(r); lastRemarkN = sc.n; }
+    else if (sc.n - lastRemarkN > 6) hush();
+    readout();
+    settle(fromCam);
+  }
+
+  function begin(str, line) {
+    life = O.sanitize(str);
+    sc = O.scene(life);
+    neverIdx = firstDefiance(sc);
+    history.replaceState(null, '', life ? '#' + life : location.pathname + location.search);
+    lastRemarkN = sc.n;
+    cam = fitCamera(sc);
+    readout();
+    render(1);
+    if (line) say(line);
+  }
+
+  // --- input ---
+  addEventListener('keydown', (e) => {
+    const about = document.getElementById('about');
+    if (e.key === 'Escape') { about.classList.remove('open'); return; }
+    if (about.classList.contains('open')) return;
+    if (e.key === 'ArrowLeft') { e.preventDefault(); choose('L'); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); choose('R'); }
+  });
+
+  canvas.addEventListener('pointerdown', (e) => {
+    if (sc.full) { choose('L'); return; } // just to say the caption
+    // Aim: whichever door points closer to where you touched the world.
+    const px = e.clientX * dpr, py = e.clientY * dpr;
+    const hx = sx(sc.you[sc.n].x), hy = sy(sc.you[sc.n].y);
+    const want = Math.atan2(py - hy, px - hx);
+    const hd = forkHeadings();
+    const diff = (a, b) => {
+      let d = Math.abs(a - b) % (Math.PI * 2);
+      return d > Math.PI ? Math.PI * 2 - d : d;
+    };
+    choose(diff(want, hd.L) <= diff(want, hd.R) ? 'L' : 'R');
+  });
+
+  document.getElementById('btn-copy').addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(location.href);
+      say('copied. anyone you hand this address will stand exactly here, ghosts and all.');
+    } catch (err) {
+      say('your life is the address bar — copy it from there.');
+    }
+  });
+  document.getElementById('btn-new').addEventListener('click', () => {
+    begin('', 'a new life. nothing has happened yet.');
+  });
+  const about = document.getElementById('about');
+  document.getElementById('btn-about').addEventListener('click', () => about.classList.add('open'));
+  document.getElementById('btn-close').addEventListener('click', () => about.classList.remove('open'));
+
+  // A pasted address is a whole other life; build it.
+  addEventListener('hashchange', () => {
+    begin(location.hash.slice(1), 'another life entirely, up to here. it continues only if you choose.');
+  });
+  addEventListener('resize', resize);
+
+  resize();
+  begin(life,
+    life.length === 0
+      ? 'nothing here moves until you choose. ← and → are the only doors.'
+      : 'someone lived this life up to here — perhaps you. it continues only if you choose.');
+})();
+</script>
+</body>
+</html>
