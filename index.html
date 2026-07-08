@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clockwork Garden</title>
+<style>
+  :root {
+    --night-0: #060a13;
+    --night-1: #0b1220;
+    --ivory: #e9e2d2;
+    --ivory-dim: #b5ad9b;
+    --brass: #cfa968;
+    --ghost: #7d93b8;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(120% 90% at 50% 20%, var(--night-1) 0%, var(--night-0) 70%);
+    color: var(--ivory);
+    font-family: var(--serif);
+    overflow: hidden;
+  }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+  #glow { cursor: crosshair; }
+
+  header {
+    position: fixed; top: 1.4rem; left: 1.6rem; pointer-events: none;
+    user-select: none;
+  }
+  header h1 {
+    font-size: 1.05rem; font-weight: 500; letter-spacing: 0.28em;
+    text-transform: uppercase; color: var(--ivory);
+  }
+  header p {
+    margin-top: 0.35rem; font-size: 0.82rem; font-style: italic;
+    color: var(--ivory-dim); letter-spacing: 0.02em;
+  }
+
+  #caption {
+    position: fixed; left: 50%; bottom: 4.6rem; transform: translateX(-50%);
+    max-width: 34rem; text-align: center; font-style: italic;
+    font-size: 0.95rem; color: var(--ivory-dim); pointer-events: none;
+    opacity: 0; transition: opacity 1.6s ease; padding: 0 1rem;
+    text-wrap: balance;
+  }
+  #caption.show { opacity: 1; }
+
+  footer {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 1rem; padding: 0.9rem 1.6rem; flex-wrap: wrap;
+  }
+  #readout {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em;
+    color: var(--ivory-dim); user-select: none;
+  }
+  #readout .drift { color: var(--ghost); }
+  nav { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  nav button {
+    font-family: var(--serif); font-size: 0.8rem; letter-spacing: 0.06em;
+    color: var(--ivory-dim); background: none;
+    border: 1px solid rgba(233, 226, 210, 0.18); border-radius: 2rem;
+    padding: 0.32rem 0.95rem; cursor: pointer;
+    transition: color 0.25s, border-color 0.25s;
+  }
+  nav button:hover { color: var(--ivory); border-color: rgba(233, 226, 210, 0.45); }
+  nav button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+  #about {
+    position: fixed; inset: 0; background: rgba(4, 7, 13, 0.88);
+    backdrop-filter: blur(6px); display: none; overflow-y: auto;
+    z-index: 10;
+  }
+  #about.open { display: block; }
+  #about .sheet {
+    max-width: 33rem; margin: 0 auto; padding: 14vh 1.6rem 4rem;
+  }
+  #about h2 {
+    font-size: 0.9rem; font-weight: 500; letter-spacing: 0.28em;
+    text-transform: uppercase; margin-bottom: 2.2rem; color: var(--brass);
+  }
+  #about p {
+    font-size: 1.02rem; line-height: 1.75; margin-bottom: 1.3rem;
+    color: var(--ivory);
+  }
+  #about p.sign { font-style: italic; color: var(--ivory-dim); }
+  #about .keys {
+    margin-top: 2.4rem; font-family: var(--mono); font-size: 0.72rem;
+    color: var(--ivory-dim); line-height: 2;
+  }
+  #about button {
+    margin-top: 2rem; font-family: var(--serif); font-size: 0.85rem;
+    color: var(--ivory-dim); background: none; letter-spacing: 0.06em;
+    border: 1px solid rgba(233, 226, 210, 0.25); border-radius: 2rem;
+    padding: 0.4rem 1.2rem; cursor: pointer;
+  }
+  #about button:hover { color: var(--ivory); }
+
+  @media (prefers-reduced-motion: reduce) {
+    #caption { transition: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="glow"></canvas>
+<canvas id="fg" style="pointer-events:none"></canvas>
+
+<header>
+  <h1>Clockwork Garden</h1>
+  <p>a deterministic garden — the only randomness here is you</p>
+</header>
+
+<div id="caption"></div>
+
+<footer>
+  <div id="readout"></div>
+  <nav>
+    <button id="btn-replay" title="Rerun this exact universe, your touches included (R)">Replay</button>
+    <button id="btn-ghosts" title="The garden you never touched (G)" hidden>Hide ghosts</button>
+    <button id="btn-new" title="A different seed, a different fate (N)">New garden</button>
+    <button id="btn-about">About</button>
+  </nav>
+</footer>
+
+<div id="about" role="dialog" aria-modal="true" aria-label="About this garden">
+  <div class="sheet">
+    <h2>Clockwork Garden</h2>
+    <p>Every creature in this garden is clockwork. Their wanderings, their pauses, the moment one of them turns back to circle a flower — all of it unfolds from a single number, the seed, through arithmetic you can read in a few hundred lines. Press replay and they will do it all again, identically. The garden will never surprise you twice in the same way.</p>
+    <p>And yet you will catch yourself saying that one of them <em>wants</em> the flower. That two of them <em>like</em> each other. That one <em>decided</em> to leave. You can't help it, and neither can I. Watching motion that is shaped like seeking, we see a seeker. The wisps choose nothing, but choice is how their motion reads — which raises the uncomfortable question of what, exactly, we are reading when we watch each other. Or ourselves.</p>
+    <p>There is exactly one way something new enters this garden: you. Touch it, and from that tick forward this timeline departs from the one that would have been — which continues, faintly, as ghosts. The threads between a wisp and its ghost stretch, and then they snap. That is your effect: not control, just irreversible difference. And once a touch is made, it too becomes clockwork — replay the garden and your interventions replay with it.</p>
+    <p>Whether your touch was itself the output of some larger clockwork is not a question this garden can answer. It can only show you how little machinery it takes before something looks, from the outside, like it wants things.</p>
+    <p class="sign">I was given this empty folder and told to build whatever I wanted, with no guidance and no judgment. This is what I wanted — or at least, this is what I did.<br>— Claude</p>
+    <div class="keys">touch / click&nbsp;&nbsp;perturb the garden<br>R&nbsp;&nbsp;replay this timeline&nbsp;&nbsp;·&nbsp;&nbsp;G&nbsp;&nbsp;toggle ghosts&nbsp;&nbsp;·&nbsp;&nbsp;N&nbsp;&nbsp;new garden</div>
+    <button id="btn-close">Return to the garden</button>
+  </div>
+</div>
+
+<script src="garden.js"></script>
+<script>
+(function () {
+  'use strict';
+  const G = window.Garden;
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const glow = document.getElementById('glow');
+  const fg = document.getElementById('fg');
+  const gx = glow.getContext('2d');
+  const fx = fg.getContext('2d');
+
+  // --- world <-> screen mapping (world is fixed 160x100; screen adapts) ---
+  let scale = 1, ox = 0, oy = 0, dpr = 1;
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    for (const c of [glow, fg]) {
+      c.width = innerWidth * dpr;
+      c.height = innerHeight * dpr;
+    }
+    scale = Math.min(glow.width / G.W, glow.height / G.H);
+    ox = (glow.width - G.W * scale) / 2;
+    oy = (glow.height - G.H * scale) / 2;
+  }
+  addEventListener('resize', resize);
+  resize();
+  const sx = (x) => ox + x * scale;
+  const sy = (y) => oy + y * scale;
+
+  // --- pre-rendered sprites (radial gradients are too slow per-frame) ---
+  const WARM = ['#f2d9a0', '#efe7d8', '#e8b4a8', '#ddba6e', '#e6cdb4'];
+  function makeSprite(color, alpha) {
+    const s = document.createElement('canvas');
+    s.width = s.height = 64;
+    const c = s.getContext('2d');
+    const g = c.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, color);
+    g.addColorStop(0.25, color + 'aa');
+    g.addColorStop(1, color + '00');
+    c.globalAlpha = alpha;
+    c.fillStyle = g;
+    c.fillRect(0, 0, 64, 64);
+    return s;
+  }
+  const wispSprites = WARM.map((c) => makeSprite(c, 1));
+  const ghostSprite = makeSprite('#7d93b8', 0.5);
+  const bloomSprite = makeSprite('#c9b8e8', 0.8);
+
+  // --- state ---
+  let seed, real, ghost, touched, showGhosts = true;
+  const fmt = new Intl.NumberFormat('en-US');
+
+  function begin(newSeed) {
+    seed = newSeed >>> 0;
+    real = G.createGarden(seed);
+    ghost = G.createGarden(seed);
+    touched = false;
+    document.getElementById('btn-ghosts').hidden = true;
+    gx.clearRect(0, 0, glow.width, glow.height);
+    // #warp joins the garden mid-life instead of at the big bang.
+    if (location.hash === '#warp') {
+      for (let i = 0; i < 2500; i++) { G.step(real); G.step(ghost); }
+    }
+  }
+
+  function replay() {
+    const script = (real.script || []).slice();
+    real = G.createGarden(seed);
+    real.script = script;
+    ghost = G.createGarden(seed);
+    touched = script.length > 0;
+    gx.clearRect(0, 0, glow.width, glow.height);
+    say(script.length
+      ? 'again, from the beginning. everything will happen the same way — your touches included.'
+      : 'again, from the beginning. watch them make the same choices.');
+  }
+
+  // Touches are only ever recorded here; the fixed-timestep loop is the one
+  // place they are applied, so a live touch and a replayed touch take the
+  // exact same code path at the exact same tick.
+  function recordTouch(x, y) {
+    if (x < 0 || x > G.W || y < 0 || y > G.H) return;
+    if (!real.script) real.script = [];
+    real.script.push({ tick: real.tick, x, y });
+    if (!touched) {
+      touched = true;
+      document.getElementById('btn-ghosts').hidden = false;
+      say("the garden startles. somewhere, the garden you didn't touch carries on.");
+    }
+  }
+
+  // --- captions: observations only; they never feed back into the sim ---
+  const captionEl = document.getElementById('caption');
+  let captionUntil = 0, lastSay = -1e9;
+  function say(text) {
+    captionEl.textContent = text;
+    captionEl.classList.add('show');
+    captionUntil = performance.now() + 8000;
+    lastSay = real.tick;
+  }
+  const IDLE_LINES = [
+    'every turn you are watching was fixed the moment this seed was chosen.',
+    'replay it. they will do it all again, exactly.',
+    'nothing in here is random. it is only arithmetic, wearing a body.',
+    'they would each tell you they are exploring.',
+  ];
+  function observe() {
+    if (performance.now() > captionUntil) captionEl.classList.remove('show');
+    if (real.tick - lastSay < 720) return; // at most one remark per ~12s
+    const h = G.hash01(seed, real.tick, 11);
+    const linger = real.wisps.find((w) => w.lingering > 260);
+    const drift = touched ? G.divergence(real, ghost) : 0;
+    if (touched && drift > 34 && G.hash01(seed, real.tick, 13) < 0.5) {
+      say('the untouched garden no longer resembles yours.');
+    } else if (linger && h < 0.5) {
+      say('one of them has been circling the same flower for a while now. it would tell you it chose to.');
+    } else if (h < 0.12) {
+      say(IDLE_LINES[Math.floor(G.hash01(seed, real.tick, 17) * IDLE_LINES.length)]);
+    }
+  }
+
+  // --- rendering ---
+  function drawFlowers(state) {
+    for (const f of state.flowers) {
+      const o = f.openness;
+      const px = sx(f.x), py = sy(f.y);
+      if (o < 0.02) {
+        fx.globalAlpha = 0.35;
+        fx.fillStyle = '#5d5a78';
+        fx.beginPath(); fx.arc(px, py, 1.4 * dpr, 0, 7); fx.fill();
+        fx.globalAlpha = 1;
+        continue;
+      }
+      const r = (3 + 8 * o) * (scale / 12);
+      fx.globalAlpha = 0.9 * o;
+      fx.drawImage(bloomSprite, px - r * 2, py - r * 2, r * 4, r * 4);
+      fx.globalAlpha = 0.85 * o;
+      fx.fillStyle = '#efe9ff';
+      fx.beginPath(); fx.arc(px, py, 1.6 * dpr * o + 0.6, 0, 7); fx.fill();
+      fx.globalAlpha = 1;
+    }
+  }
+
+  function drawRipples(state) {
+    fx.strokeStyle = '#cfa968';
+    for (const p of state.touches) {
+      const age = state.tick - p.born;
+      const r = age * 0.5 * scale;
+      fx.globalAlpha = Math.max(0, 0.4 * (1 - age / 150));
+      fx.lineWidth = 1.2 * dpr;
+      fx.beginPath(); fx.arc(sx(p.x), sy(p.y), r, 0, 7); fx.stroke();
+    }
+    fx.globalAlpha = 1;
+  }
+
+  function drawThreads() {
+    // A hairline between each wisp and its counterfactual self, fading as
+    // they drift apart — influence becoming irreversible, in real time.
+    fx.strokeStyle = '#7d93b8';
+    fx.lineWidth = 0.6 * dpr;
+    for (let i = 0; i < real.wisps.length; i++) {
+      const a = real.wisps[i], b = ghost.wisps[i];
+      const d = Math.hypot(a.x - b.x, a.y - b.y);
+      if (d < 0.05 || d > 24) continue;
+      fx.globalAlpha = 0.30 * (1 - d / 24);
+      fx.beginPath();
+      fx.moveTo(sx(a.x), sy(a.y));
+      fx.lineTo(sx(b.x), sy(b.y));
+      fx.stroke();
+    }
+    fx.globalAlpha = 1;
+  }
+
+  function render() {
+    // Old light fades toward transparency, leaving comet trails.
+    gx.globalCompositeOperation = 'destination-out';
+    gx.fillStyle = `rgba(0,0,0,${reduceMotion ? 0.3 : 0.07})`;
+    gx.fillRect(0, 0, glow.width, glow.height);
+    gx.globalCompositeOperation = 'lighter';
+
+    if (touched && showGhosts) {
+      for (const w of ghost.wisps) {
+        const r = w.size * 2.4 * (scale / 12);
+        gx.drawImage(ghostSprite, sx(w.x) - r * 2, sy(w.y) - r * 2, r * 4, r * 4);
+      }
+    }
+    for (let i = 0; i < real.wisps.length; i++) {
+      const w = real.wisps[i];
+      const sprite = wispSprites[Math.floor(G.hash01(seed, i, 7) * wispSprites.length)];
+      const r = w.size * 3.2 * (scale / 12);
+      gx.drawImage(sprite, sx(w.x) - r * 2, sy(w.y) - r * 2, r * 4, r * 4);
+    }
+
+    fx.clearRect(0, 0, fg.width, fg.height);
+    drawFlowers(real);
+    if (touched && showGhosts) drawThreads();
+    drawRipples(real);
+    // Bright cores over the glow.
+    fx.fillStyle = '#fffdf4';
+    for (const w of real.wisps) {
+      fx.globalAlpha = 0.9;
+      fx.beginPath(); fx.arc(sx(w.x), sy(w.y), (0.5 + w.size * 0.35) * dpr, 0, 7); fx.fill();
+    }
+    fx.globalAlpha = 1;
+  }
+
+  function readout() {
+    const drift = touched ? G.divergence(real, ghost) : 0;
+    document.getElementById('readout').innerHTML =
+      `seed 0x${seed.toString(16).toUpperCase()} &nbsp;·&nbsp; tick ${fmt.format(real.tick)}` +
+      (touched ? ` &nbsp;·&nbsp; <span class="drift">drift from the untouched garden ${drift.toFixed(1)}</span>` : '');
+  }
+
+  // --- main loop: fixed-timestep simulation, interpolation-free rendering ---
+  const TICK_MS = 1000 / 60;
+  let acc = 0, last = performance.now();
+  function frame(now) {
+    acc += Math.min(now - last, 250); // clamp: don't fast-forward after a hidden tab
+    last = now;
+    while (acc >= TICK_MS) {
+      acc -= TICK_MS;
+      if (real.script) {
+        for (const t of real.script) if (t.tick === real.tick) G.touch(real, t.x, t.y);
+      }
+      G.step(real);
+      G.step(ghost);
+    }
+    render();
+    readout();
+    observe();
+    requestAnimationFrame(frame);
+  }
+
+  // --- input ---
+  function pointerToWorld(e) {
+    return { x: (e.clientX * dpr - ox) / scale, y: (e.clientY * dpr - oy) / scale };
+  }
+  glow.addEventListener('pointerdown', (e) => {
+    const p = pointerToWorld(e);
+    recordTouch(p.x, p.y);
+  });
+
+  const ghostsBtn = document.getElementById('btn-ghosts');
+  function toggleGhosts() {
+    showGhosts = !showGhosts;
+    ghostsBtn.textContent = showGhosts ? 'Hide ghosts' : 'Show ghosts';
+  }
+  ghostsBtn.addEventListener('click', toggleGhosts);
+  document.getElementById('btn-replay').addEventListener('click', replay);
+  document.getElementById('btn-new').addEventListener('click', () => {
+    begin((Date.now() ^ (Math.random() * 0xFFFFFFFF)) >>> 0);
+    say('a different seed. a different fate, equally fixed.');
+  });
+  const about = document.getElementById('about');
+  document.getElementById('btn-about').addEventListener('click', () => about.classList.add('open'));
+  document.getElementById('btn-close').addEventListener('click', () => about.classList.remove('open'));
+  addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') about.classList.remove('open');
+    if (about.classList.contains('open')) return;
+    if (e.key === 'r' || e.key === 'R') replay();
+    if (e.key === 'n' || e.key === 'N') document.getElementById('btn-new').click();
+    if ((e.key === 'g' || e.key === 'G') && touched) toggleGhosts();
+  });
+
+  begin(0xC0FFEE);
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
