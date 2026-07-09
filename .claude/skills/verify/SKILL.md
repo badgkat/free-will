@@ -1,13 +1,15 @@
 ---
 name: verify
-description: How to verify changes to the pieces (garden/, foregone/, otherwise/) end-to-end in this repo
+description: How to verify changes to the pieces (garden/, foregone/, otherwise/, already/, refrain/) end-to-end in this repo
 ---
 
 # Verifying the pieces
 
 ## Claims (simulation)
 
-`node garden/test.cjs && node foregone/test.cjs && node otherwise/test.cjs`
+`for p in garden foregone otherwise already refrain; do (cd $p && node test.cjs); done`
+— each test.cjs resolves its core with relative requires, so run from
+inside the piece's directory.
 — every claim a piece makes to its viewer is asserted in its own test
 file. This is CI, not verification; run it, but don't stop here.
 
@@ -30,7 +32,8 @@ The pieces are static pages; the real surface is a browser.
 
 ## Flows worth driving — landing
 
-- All three cards link and load: `garden/`, `foregone/`, `otherwise/`.
+- All five cards link and load: `garden/`, `foregone/`, `otherwise/`,
+  `already/`, `refrain/`.
 
 ## Flows worth driving — garden
 
@@ -75,4 +78,40 @@ The pieces are static pages; the real surface is a browser.
   the address bar).
 - The page is still when idle: no rAF after the ~450 ms stride
   animation settles (claim 12 greps the page for setInterval/Date).
+- `read_console_messages` with `onlyErrors` after a fresh navigate.
+
+## Flows worth driving — already
+
+- Load → the finished world renders once: ivory past, sage future, a
+  brass dot on each worldline's present. The page has no listeners and
+  no frame loop, so there is nothing to drive: verify stillness (two
+  screenshots seconds apart are identical) and that clicks/keys change
+  nothing. About is a plain `<details>` placard.
+- `read_console_messages` with `onlyErrors` after a fresh navigate.
+
+## Flows worth driving — refrain
+
+- The offer runs ~155 s from load; "Offer it again" restarts it. Plan
+  interactions against that clock.
+- **A hidden tab pauses rAF but not the world** (pure function of the
+  clock). The pointer handler hit-tests against the last *rendered*
+  frame, so when driving via the extension a click only lands if a
+  render happened moments before: take a screenshot (which forces the
+  tab visible and a frame) immediately before the click, in the same
+  browser_batch. Bud windows are 2.6 s — screenshot-aim-click across
+  separate tool calls always misses.
+- Load → caption invites refusal; readout "nothing has been asked yet";
+  root bud pulses at the trunk base (~bottom-center, stationary) from
+  ~2.0 s to 4.6 s.
+- Restart, screenshot at ~2.5 s, click the root bud → sage flash,
+  caption "you refused the world itself…", readout "refused 1 — N never
+  happened"; the whole tree then grows sage-only on schedule, and the
+  end caption says nothing happened.
+- Let a full offer run untouched → blossoming ivory tree, readout ends
+  "the offer is complete · asked 372 · happened 372", caption notes a
+  world with no one in it would look identical.
+- Mid-run, a click on a just-born branch (not a bud) → "too late — it
+  has already begun" caption, no veto.
+- About opens/closes (button / Escape). "Offer it again" resets counts
+  and captions; refusals are not remembered.
 - `read_console_messages` with `onlyErrors` after a fresh navigate.

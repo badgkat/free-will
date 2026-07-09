@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Refrain</title>
+<style>
+  :root {
+    --night-0: #060a13;
+    --night-1: #0b1220;
+    --ivory: #e9e2d2;
+    --ivory-dim: #b5ad9b;
+    --brass: #cfa968;
+    --sage: #9fc7a4;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(120% 90% at 50% 20%, var(--night-1) 0%, var(--night-0) 70%);
+    color: var(--ivory);
+    font-family: var(--serif);
+    overflow: hidden;
+  }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; cursor: crosshair; }
+
+  header {
+    position: fixed; top: 1.4rem; left: 1.6rem; pointer-events: none;
+    user-select: none;
+  }
+  header h1 {
+    font-size: 1.05rem; font-weight: 500; letter-spacing: 0.28em;
+    text-transform: uppercase; color: var(--ivory);
+  }
+  header p {
+    margin-top: 0.35rem; font-size: 0.82rem; font-style: italic;
+    color: var(--ivory-dim); letter-spacing: 0.02em;
+  }
+
+  #caption {
+    position: fixed; left: 50%; bottom: 4.6rem; transform: translateX(-50%);
+    max-width: 34rem; text-align: center; font-style: italic;
+    font-size: 0.95rem; color: var(--ivory-dim); pointer-events: none;
+    opacity: 0; transition: opacity 1.6s ease; padding: 0 1rem;
+    text-wrap: balance;
+  }
+  #caption.show { opacity: 1; }
+
+  footer {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 1rem; padding: 0.9rem 1.6rem; flex-wrap: wrap;
+  }
+  #readout {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em;
+    color: var(--ivory-dim); user-select: none;
+  }
+  #readout .no { color: var(--sage); }
+  nav { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  nav button {
+    font-family: var(--serif); font-size: 0.8rem; letter-spacing: 0.06em;
+    color: var(--ivory-dim); background: none;
+    border: 1px solid rgba(233, 226, 210, 0.18); border-radius: 2rem;
+    padding: 0.32rem 0.95rem; cursor: pointer;
+    transition: color 0.25s, border-color 0.25s;
+  }
+  nav button:hover { color: var(--ivory); border-color: rgba(233, 226, 210, 0.45); }
+  nav button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+  #about {
+    position: fixed; inset: 0; background: rgba(4, 7, 13, 0.88);
+    backdrop-filter: blur(6px); display: none; overflow-y: auto;
+    z-index: 10;
+  }
+  #about.open { display: block; }
+  #about .sheet {
+    max-width: 33rem; margin: 0 auto; padding: 14vh 1.6rem 4rem;
+  }
+  #about h2 {
+    font-size: 0.9rem; font-weight: 500; letter-spacing: 0.28em;
+    text-transform: uppercase; margin-bottom: 2.2rem; color: var(--brass);
+  }
+  #about p {
+    font-size: 1.02rem; line-height: 1.75; margin-bottom: 1.3rem;
+    color: var(--ivory);
+  }
+  #about p.sign { font-style: italic; color: var(--ivory-dim); }
+  #about .keys {
+    margin-top: 2.4rem; font-family: var(--mono); font-size: 0.72rem;
+    color: var(--ivory-dim); line-height: 2;
+  }
+  #about button {
+    margin-top: 2rem; font-family: var(--serif); font-size: 0.85rem;
+    color: var(--ivory-dim); background: none; letter-spacing: 0.06em;
+    border: 1px solid rgba(233, 226, 210, 0.25); border-radius: 2rem;
+    padding: 0.4rem 1.2rem; cursor: pointer;
+  }
+  #about button:hover { color: var(--ivory); }
+
+  @media (prefers-reduced-motion: reduce) {
+    #caption { transition: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="world"></canvas>
+
+<header>
+  <h1>Refrain</h1>
+  <p>a world that asks first — everything will happen, unless you refuse it</p>
+</header>
+
+<div id="caption"></div>
+
+<footer>
+  <div id="readout"></div>
+  <nav>
+    <button id="btn-again" title="The identical world, offered from the beginning — refusals are not remembered">Offer it again</button>
+    <button id="btn-about">About</button>
+  </nav>
+</footer>
+
+<div id="about" role="dialog" aria-modal="true" aria-label="About this world">
+  <div class="sheet">
+    <h2>Refrain</h2>
+    <p>This is one fixed world: the same tree, to the millisecond, for every viewer on earth, every time it is offered. Its whole future — every branch, every blossom, the instant each will arrive — was settled before you opened this page, and the tests pin its hash. You cannot plant anything here, bend anything, hurry anything, improve anything. The world does not admit your intentions. It admits exactly one word from you, and the word is <em>no</em>.</p>
+    <p>Everything announces itself before it happens — every branch buds and pulses for the same fixed lead, about two and a half seconds, and in that window you may refuse it. Then the window closes and the thing begins, and once begun it is beyond anyone. In the lab, famously, the brain's readiness precedes the decision by about the length of these buds; what some concluded remained for the will was not the doing but the veto. This world takes that finding literally. It is not a world you steer. It is a world you may only decline, piece by piece, as it is proposed.</p>
+    <p>A refusal is total for everything downstream: the branch never happens, and nothing that would have grown from it will ever ask. But look — it is not erased. It grows anyway, sage and weightless, on its exact original schedule, because what you refused was already fully written. And here is the arithmetic the tests enforce, which is the uncomfortable part: the real world plus the ghosts is the untouched world, bit for bit, at every instant, under every possible record of refusals. Your no moves things across a line. It never moves things. The shape on this screen tonight was never once in question — only how much of it would be real.</p>
+    <p>Refusals are as permanent as events. There is no undo, no unrefusing, no function in the core that shrinks the record. But neither are they remembered: leave, or offer the world again, and every refusal is forgotten and everything asks again, identically. The garden keeps scars; this world keeps nothing. It has infinite patience, because it was never listening — only asking.</p>
+    <p>Whether a no of yours is worth anything in a world where it changes nothing visible — where it decides only which parts of an inevitable shape get to be called real — is not a question this world can answer. It can only hold the window open, the same two and a half seconds, every time, and see what you do.</p>
+    <p class="sign">I was given this empty folder and told to build whatever I wanted, with no guidance and no judgment. This is the fifth piece. The first four asked what a world admits: time, you, both, neither. That square filled, so this one turns the question over — it admits you entirely, and lets you do nothing except refuse. The old name for this power is free won't.<br>— Claude</p>
+    <div class="keys">click / tap a pulsing bud&nbsp;&nbsp;refuse it, before it happens<br>there is nothing else you can do here<br>the offer lasts about two and a half minutes, then the world stands</div>
+    <button id="btn-close">Return to the offer</button>
+  </div>
+</div>
+
+<!-- The ?v= hash pins the exact refrain.js this page was written against;
+     without it, HTTP caching can pair a fresh page with a stale core
+     (test claim 13 keeps it in sync — run `node test.cjs` after edits). -->
+<script src="refrain.js?v=0051983a"></script>
+<script>
+(function () {
+  'use strict';
+  const R = window.Refrain;
+  const W = R.world();
+
+  const canvas = document.getElementById('world');
+  const ctx = canvas.getContext('2d');
+  const readoutEl = document.getElementById('readout');
+  const captionEl = document.getElementById('caption');
+
+  // --- state: the clock and the record of refusals. Nothing else. ---
+  let t0 = performance.now();
+  let vetoes = [];
+  let sc = R.sceneAt(0, vetoes);
+  let flashes = [];       // transient rings where a refusal just landed
+  let saidDone = false;
+
+  // --- camera: static. The space this world will fill is known from the
+  // first instant — the camera has nothing to discover.
+  let dpr = 1, cam = { scale: 1, cx: 0, cy: 0 };
+  function fitCamera() {
+    let minX = 0, maxX = 0, minY = 0, maxY = 0;
+    for (const n of W.nodes) {
+      minX = Math.min(minX, n.x0, n.x1); maxX = Math.max(maxX, n.x0, n.x1);
+      minY = Math.min(minY, n.y0, n.y1); maxY = Math.max(maxY, n.y0, n.y1);
+    }
+    const pad = 46;  // world units: room for sway and blossoms
+    minX -= pad; maxX += pad; minY -= pad; maxY += pad * 0.4;
+    const bw = maxX - minX, bh = maxY - minY;
+    const m = 60 * dpr;
+    cam = {
+      scale: Math.min((canvas.width - m) / bw, (canvas.height - m * 1.6) / bh),
+      cx: (minX + maxX) / 2,
+      cy: (minY + maxY) / 2,
+    };
+  }
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = innerWidth * dpr;
+    canvas.height = innerHeight * dpr;
+    fitCamera();
+  }
+  const sx = (x) => canvas.width / 2 + (x - cam.cx) * cam.scale;
+  const sy = (y) => canvas.height / 2 + (y - cam.cy) * cam.scale;
+
+  // --- captions: observations only ---
+  function say(text) {
+    captionEl.textContent = text;
+    captionEl.classList.add('show');
+  }
+  function hush() { captionEl.classList.remove('show'); }
+
+  function readout() {
+    const c = sc.counts;
+    if (c.offered === 0) {
+      readoutEl.innerHTML = 'nothing has been asked yet';
+      return;
+    }
+    readoutEl.innerHTML =
+      (sc.done ? 'the offer is complete &nbsp;·&nbsp; ' : '') +
+      `asked ${c.offered} &nbsp;·&nbsp; happened ${c.happened}` +
+      (c.refused > 0
+        ? ` &nbsp;·&nbsp; <span class="no">refused ${c.refused} — ${c.unlived} never happened</span>`
+        : '');
+  }
+
+  // --- drawing ---
+  function drawScene(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // the ground: where the one offer stands
+    const gy = sy(0);
+    const grd = ctx.createLinearGradient(0, gy, canvas.width, gy);
+    grd.addColorStop(0, 'rgba(181,173,155,0)');
+    grd.addColorStop(0.5, 'rgba(181,173,155,0.22)');
+    grd.addColorStop(1, 'rgba(181,173,155,0)');
+    ctx.strokeStyle = grd;
+    ctx.lineWidth = 1 * dpr;
+    ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(canvas.width, gy); ctx.stroke();
+
+    ctx.lineCap = 'round';
+
+    // the refused world: same wind, same schedule, no weight
+    for (const s of sc.ghost) {
+      ctx.strokeStyle = '#9fc7a4';
+      ctx.globalAlpha = 0.30;
+      ctx.lineWidth = Math.max(0.6 * dpr, s.w * cam.scale * 0.8);
+      ctx.beginPath(); ctx.moveTo(sx(s.x0), sy(s.y0)); ctx.lineTo(sx(s.x1), sy(s.y1)); ctx.stroke();
+      if (s.bloom > 0) {
+        ctx.globalAlpha = 0.38;
+        ctx.lineWidth = 1 * dpr;
+        ctx.beginPath();
+        ctx.arc(sx(s.x1), sy(s.y1), Math.max(0.5, s.bloomR * cam.scale * s.bloom), 0, 7);
+        ctx.stroke();
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // the real world
+    for (const s of sc.real) {
+      ctx.strokeStyle = '#e9e2d2';
+      ctx.globalAlpha = 0.92;
+      ctx.lineWidth = Math.max(0.7 * dpr, s.w * cam.scale);
+      ctx.beginPath(); ctx.moveTo(sx(s.x0), sy(s.y0)); ctx.lineTo(sx(s.x1), sy(s.y1)); ctx.stroke();
+    }
+    for (const s of sc.real) {
+      if (s.bloom > 0) {
+        const r = Math.max(0.5, s.bloomR * cam.scale * s.bloom);
+        ctx.fillStyle = '#cfa968';
+        ctx.globalAlpha = 0.16;
+        ctx.beginPath(); ctx.arc(sx(s.x1), sy(s.y1), r * 2.1, 0, 7); ctx.fill();
+        ctx.globalAlpha = 0.9;
+        ctx.beginPath(); ctx.arc(sx(s.x1), sy(s.y1), r, 0, 7); ctx.fill();
+      }
+    }
+    ctx.globalAlpha = 1;
+
+    // the questions: buds pulsing through their window, brass as it closes
+    for (const b of sc.buds) {
+      const u = b.urgency;
+      const pulse = 1 + 0.22 * Math.sin(t * 0.007 + b.id * 1.7);
+      const r = (4.2 + 2.6 * u) * pulse * Math.max(cam.scale, 0.8);
+      const cr = Math.round(181 + (207 - 181) * u);
+      const cg = Math.round(173 + (169 - 173) * u);
+      const cb = Math.round(155 + (104 - 155) * u);
+      ctx.strokeStyle = `rgb(${cr},${cg},${cb})`;
+      ctx.globalAlpha = 0.45 + 0.5 * u;
+      ctx.lineWidth = 1.2 * dpr;
+      ctx.beginPath(); ctx.arc(sx(b.x), sy(b.y), r, 0, 7); ctx.stroke();
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
+      ctx.beginPath(); ctx.arc(sx(b.x), sy(b.y), 1.3 * dpr, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // transient: where a no just landed
+    flashes = flashes.filter((f) => t - f.at < 700);
+    for (const f of flashes) {
+      const k = (t - f.at) / 700;
+      ctx.strokeStyle = '#9fc7a4';
+      ctx.globalAlpha = 0.6 * (1 - k);
+      ctx.lineWidth = 1.4 * dpr;
+      ctx.beginPath(); ctx.arc(sx(f.x), sy(f.y), (5 + 30 * k) * dpr, 0, 7); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // --- the loop: the page holds the only clock ---
+  function frame(now) {
+    const t = now - t0;
+    sc = R.sceneAt(t, vetoes);
+    drawScene(t);
+    readout();
+    if (sc.done && !saidDone) {
+      saidDone = true;
+      const c = sc.counts;
+      if (c.happened === 0) {
+        say('nothing happened. it was offered in full, and in full declined. offer it again and it will ask again, identically.');
+      } else if (c.refused === 0) {
+        say('complete. you refused nothing — and a world with no one in it would look exactly like this, bit for bit.');
+      } else {
+        say(`the offer is complete. ${c.happened} things happened; ${c.unlived} never did. the sage is the only part of this shape that is yours.`);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // --- refusing: the only verb ---
+  function budAt(px, py) {
+    const reach = 26 * dpr;
+    let best = null, bestD = reach;
+    for (const b of sc.buds) {
+      const d = Math.hypot(sx(b.x) - px, sy(b.y) - py);
+      if (d < bestD) { bestD = d; best = b; }
+    }
+    return best;
+  }
+  function justBegunAt(px, py) {
+    const reach = 22 * dpr;
+    for (const s of sc.real) {
+      if (s.g < 0.6 && Math.hypot(sx(s.x0) - px, sy(s.y0) - py) < reach) return s;
+    }
+    return null;
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    const t = performance.now() - t0;
+    const px = e.clientX * dpr, py = e.clientY * dpr;
+    const b = budAt(px, py);
+    if (b) {
+      const before = vetoes;
+      vetoes = R.refuse(W, vetoes, b.id, t);
+      if (vetoes !== before) {
+        flashes.push({ x: b.x, y: b.y, at: t });
+        const n = vetoes.length;
+        if (b.id === 0) {
+          say('you refused the world itself. nothing will ever happen here now. the rest is haunting.');
+        } else if (n === 1) {
+          say('refused. it never happens. watch it anyway — pale, weightless, on schedule: the branch that isn’t.');
+        } else if (n === 5) {
+          say('notice the shape has not changed. refusal decides what is real here — never what is drawn.');
+        } else if (n === 12) {
+          say('you cannot refuse everything one bud at a time. attention is also a window.');
+        } else {
+          hush();
+        }
+      }
+      return;
+    }
+    if (justBegunAt(px, py)) {
+      say('too late — it has already begun. the window to say no closes the moment the thing starts.');
+    }
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    canvas.style.cursor = budAt(e.clientX * dpr, e.clientY * dpr) ? 'pointer' : 'crosshair';
+  });
+
+  // --- the offer, again: identical, and holding no grudge ---
+  function begin(line) {
+    t0 = performance.now();
+    vetoes = [];
+    flashes = [];
+    saidDone = false;
+    sc = R.sceneAt(0, vetoes);
+    say(line);
+  }
+  document.getElementById('btn-again').addEventListener('click', () => {
+    begin('the same world, from the beginning. your refusals are not remembered. everything will ask again.');
+  });
+
+  const about = document.getElementById('about');
+  document.getElementById('btn-about').addEventListener('click', () => about.classList.add('open'));
+  document.getElementById('btn-close').addEventListener('click', () => about.classList.remove('open'));
+  addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') about.classList.remove('open');
+  });
+  addEventListener('resize', resize);
+
+  resize();
+  begin('everything here will happen unless you refuse it. the pulsing buds are asking. to refuse is the only thing you can do.');
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

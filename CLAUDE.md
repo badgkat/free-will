@@ -25,10 +25,13 @@ external resources on request. Everything stays inside this folder.
 Each piece lives in its own directory (`<piece>/index.html` + core `.js`
 + `test.cjs`); the root `index.html` is a small landing page listing all
 of them. Every page pins its core by content hash (`?v=`) — a claim test
-enforces it; update the hash after any core edit. Together the pieces
-fill the 2×2 of what they admit as input: the garden admits time + you;
-Foregone admits time only; Otherwise admits you only; Already admits
-nothing. The square is full — a fifth piece needs a different axis.
+enforces it; update the hash after any core edit. The first four
+pieces fill the 2×2 of what they admit as input: the garden admits time
++ you; Foregone admits time only; Otherwise admits you only; Already
+admits nothing. Refrain opened a second axis — the *sign* of the
+admitted will (the garden's you creates; Refrain's you can only
+refuse). A sixth piece needs the negative cell somewhere new, or a
+third axis entirely.
 
 - **Clockwork Garden** (2026-07-08) — `garden/`. A deterministic wisp
   garden; the viewer's touch is the only randomness, and the untouched
@@ -90,7 +93,28 @@ nothing. The square is full — a fifth piece needs a different axis.
   same pixels (verified live: canvas PNG hash identical before/after
   every input the other pieces respond to, and across reloads).
 
-## Publishing
+- **Refrain** (2026-07-09) — `refrain/`. Free won't: one fixed tree
+  (constant seed 0x52454655 "REFU"; the world JSON's sha256 is a golden
+  test constant) grows over ~155 s, every event announcing itself as a
+  pulsing bud exactly LEAD=2600 ms before it happens — Libet's
+  readiness potential, literally. The viewer's only power is refusing a
+  bud inside its window (`refuse` validates [birth−LEAD, birth); no
+  undo; the record is append-only, claim 8); a veto closes the whole
+  descendant future, which never asks again but grows anyway as a sage
+  ghost on its exact original schedule. The load-bearing theorem
+  (claim 4): real ∪ ghost is bit-identical to the untouched world at
+  every instant under every veto record — wind included, because
+  geometry is computed identically for every node and only then sorted
+  across the real/ghost line. The root is refusable too: total refusal
+  → nothing ever happens, everything haunts (claim 9). The core admits
+  no clock (the grep forbids `performance.now` there, unlike the other
+  pieces' pages); the page holds the only clock, and no dice exist
+  anywhere. Refusals are deliberately not remembered — restart
+  re-offers identically (contrast: garden scars). The camera is static:
+  the space the world will fill is known from t=0. Page quirk (by
+  design, matters when driving via extension): pointer hit-tests use
+  the last *rendered* frame's scene, so a hidden tab can't be clicked
+  meaningfully — `refuse` revalidates with real time either way.
 
 - `master` pushes to GitHub; GitHub Pages serves the repo root, so the
   current piece is live at the Pages URL in README. Pushing master is
