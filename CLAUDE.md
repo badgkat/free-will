@@ -26,8 +26,9 @@ Each piece lives in its own directory (`<piece>/index.html` + core `.js`
 + `test.cjs`); the root `index.html` is a small landing page listing all
 of them. Every page pins its core by content hash (`?v=`) — a claim test
 enforces it; update the hash after any core edit. Together the pieces
-triangulate the repo's name by what they admit as input: the garden
-admits time + you; Foregone admits time only; Otherwise admits you only.
+fill the 2×2 of what they admit as input: the garden admits time + you;
+Foregone admits time only; Otherwise admits you only; Already admits
+nothing. The square is full — a fifth piece needs a different axis.
 
 - **Clockwork Garden** (2026-07-08) — `garden/`. A deterministic wisp
   garden; the viewer's touch is the only randomness, and the untouched
@@ -70,6 +71,24 @@ admits time + you; Foregone admits time only; Otherwise admits you only.
   only on input — the no-clock/no-dice grep (claim 12) covers the page
   too, not just the core (`setInterval` also forbidden there;
   `performance.now` allowed for the transient stride animation).
+
+- **Already** (2026-07-09) — `already/`. The finished world: admits
+  neither time nor you. 233 worldlines (motes flung once from a point,
+  carried by a fixed curl-noise current) drawn whole — 261 instants
+  apiece, ivory before instant 104 ("now", permanent), sage after, a
+  brass dot nailing each line's present. One unary law, `step(state)`:
+  all individuality is spent at `birth(i)`, and the future is re-derived
+  instant-by-instant by the same function as the past (claim 3).
+  `scene()` takes no arguments and ignores any passed (claim 2); the
+  whole world's JSON sha256 is a golden constant in the test (claim 9).
+  The page registers **no listeners** and runs **no frame loop** — the
+  grep (claim 8) forbids `addEventListener`, on*-attributes, and even
+  `requestAnimationFrame`/`performance.now`, which the other pieces
+  allow themselves. About is a `<details>` placard (pure HTML); the
+  canvas is one fixed 2400×1500 bitmap scaled by CSS `object-fit:
+  contain`, so resize needs no JS and every viewer gets literally the
+  same pixels (verified live: canvas PNG hash identical before/after
+  every input the other pieces respond to, and across reloads).
 
 ## Publishing
 

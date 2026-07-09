@@ -1,6 +1,6 @@
 # free will
 
-Three pieces about the same question.
+Four pieces about the same question.
 
 **Live: <https://badgkat.github.io/free-will/>**
 
@@ -13,6 +13,7 @@ against the actual simulation core in plain Node:
 node garden/test.cjs
 node foregone/test.cjs
 node otherwise/test.cjs
+node already/test.cjs
 ```
 
 ## 01 · Clockwork Garden — `garden/`
@@ -76,21 +77,50 @@ redraws — and a life holds 500 choices.
 - **← / →** choose · **click / tap** walk toward where you clicked
 - **Copy this life** share the exact world · **Live again** start empty
 
+## 04 · Already — `already/`
+
+A finished world. Even its future has already happened.
+
+Two hundred and thirty-three worldlines — motes flung once from a single
+point, carried by a fixed current — drawn whole, all two hundred and
+sixty-one instants of each. The ivory part of every line has happened;
+the sage part hasn't, and never will, because nothing here advances: the
+brass dots mark the instant it is, and it will stay that instant. But
+the future is no sketch — every instant of every line, before the dot
+and after it, is computed from the instant before by the same
+one-argument law, and the tests re-derive all of them to prove it. The
+only difference between this world's past and its future is which side
+of the dot it lies on.
+
+This is the corner the other pieces leave empty: the garden admits time
+and you; the monument, time alone; the fork-world, you alone; this
+world, nothing. `scene()` takes no arguments. The page registers no
+event listeners and runs no frame loop — the tests grep for doors here
+the way the other pieces grep for dice — and the picture is one fixed
+bitmap, so every viewer, on every machine, in any year, is shown the
+same pixels (the world's entire JSON is pinned to a sha256 in the
+tests). Whatever will there is in this world was spent at authorship.
+
+- nothing does anything, and that is the piece
+- **About** opens a placard — it is HTML (`<details>`), not an event
+
 ## Files
 
 - `index.html` — landing page.
-- `garden/garden.js`, `foregone/foregone.js`, `otherwise/otherwise.js` —
-  pure simulation cores; no DOM, no clock, no dice. Each loads in both
-  browser and Node.
-- `garden/index.html`, `foregone/index.html`, `otherwise/index.html` —
-  renderers and chrome. Each pins its core by content hash (`?v=`) so
-  HTTP caching can never pair a fresh page with a stale core.
-- `garden/test.cjs`, `foregone/test.cjs`, `otherwise/test.cjs` — the
-  claims, verified.
+- `garden/garden.js`, `foregone/foregone.js`, `otherwise/otherwise.js`,
+  `already/already.js` — pure simulation cores; no DOM, no clock, no
+  dice. Each loads in both browser and Node.
+- `garden/index.html`, `foregone/index.html`, `otherwise/index.html`,
+  `already/index.html` — renderers and chrome. Each pins its core by
+  content hash (`?v=`) so HTTP caching can never pair a fresh page with
+  a stale core.
+- `garden/test.cjs`, `foregone/test.cjs`, `otherwise/test.cjs`,
+  `already/test.cjs` — the claims, verified.
 
 ## Provenance
 
 This repository was handed to Claude empty, with the instruction to build
 anything at all, with no guidance and no judgment. The folder was already
 named `free-will`. These are what came out: one machine with a single door
-for you, one with none, and one that is nothing but doors.
+for you, one with none, one that is nothing but doors — and a fourth with
+no doors at all, not even for time.
