@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reprieve</title>
+<style>
+  :root {
+    --night-0: #060a13;
+    --night-1: #0b1220;
+    --ivory: #e9e2d2;
+    --ivory-dim: #b5ad9b;
+    --brass: #cfa968;
+    --sage: #9fc7a4;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: radial-gradient(120% 90% at 50% 20%, var(--night-1) 0%, var(--night-0) 70%);
+    color: var(--ivory);
+    font-family: var(--serif);
+    overflow: hidden;
+  }
+  canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; cursor: crosshair; }
+
+  header {
+    position: fixed; top: 1.4rem; left: 1.6rem; pointer-events: none;
+    user-select: none;
+  }
+  header h1 {
+    font-size: 1.05rem; font-weight: 500; letter-spacing: 0.28em;
+    text-transform: uppercase; color: var(--ivory);
+  }
+  header p {
+    margin-top: 0.35rem; font-size: 0.82rem; font-style: italic;
+    color: var(--ivory-dim); letter-spacing: 0.02em;
+  }
+
+  #caption {
+    position: fixed; left: 50%; bottom: 4.6rem; transform: translateX(-50%);
+    max-width: 34rem; text-align: center; font-style: italic;
+    font-size: 0.95rem; color: var(--ivory-dim); pointer-events: none;
+    opacity: 0; transition: opacity 1.6s ease; padding: 0 1rem;
+    text-wrap: balance;
+  }
+  #caption.show { opacity: 1; }
+
+  footer {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 1rem; padding: 0.9rem 1.6rem; flex-wrap: wrap;
+  }
+  #readout {
+    font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em;
+    color: var(--ivory-dim); user-select: none;
+  }
+  #readout .bought { color: var(--brass); }
+  nav { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+  nav button {
+    font-family: var(--serif); font-size: 0.8rem; letter-spacing: 0.06em;
+    color: var(--ivory-dim); background: none;
+    border: 1px solid rgba(233, 226, 210, 0.18); border-radius: 2rem;
+    padding: 0.32rem 0.95rem; cursor: pointer;
+    transition: color 0.25s, border-color 0.25s;
+  }
+  nav button:hover { color: var(--ivory); border-color: rgba(233, 226, 210, 0.45); }
+  nav button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+  #about {
+    position: fixed; inset: 0; background: rgba(4, 7, 13, 0.88);
+    backdrop-filter: blur(6px); display: none; overflow-y: auto;
+    z-index: 10;
+  }
+  #about.open { display: block; }
+  #about .sheet {
+    max-width: 33rem; margin: 0 auto; padding: 14vh 1.6rem 4rem;
+  }
+  #about h2 {
+    font-size: 0.9rem; font-weight: 500; letter-spacing: 0.28em;
+    text-transform: uppercase; margin-bottom: 2.2rem; color: var(--brass);
+  }
+  #about p {
+    font-size: 1.02rem; line-height: 1.75; margin-bottom: 1.3rem;
+    color: var(--ivory);
+  }
+  #about p.sign { font-style: italic; color: var(--ivory-dim); }
+  #about .keys {
+    margin-top: 2.4rem; font-family: var(--mono); font-size: 0.72rem;
+    color: var(--ivory-dim); line-height: 2;
+  }
+  #about button {
+    margin-top: 2rem; font-family: var(--serif); font-size: 0.85rem;
+    color: var(--ivory-dim); background: none; letter-spacing: 0.06em;
+    border: 1px solid rgba(233, 226, 210, 0.25); border-radius: 2rem;
+    padding: 0.4rem 1.2rem; cursor: pointer;
+  }
+  #about button:hover { color: var(--ivory); }
+
+  @media (prefers-reduced-motion: reduce) {
+    #caption { transition: none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="world"></canvas>
+
+<header>
+  <h1>Reprieve</h1>
+  <p>a world that must end — nothing can be saved, everything can be postponed</p>
+</header>
+
+<div id="caption"></div>
+
+<footer>
+  <div id="readout"></div>
+  <nav>
+    <button id="btn-again" title="The identical field, lit from the beginning — reprieves are not remembered">Light it again</button>
+    <button id="btn-about">About</button>
+  </nav>
+</footer>
+
+<div id="about" role="dialog" aria-modal="true" aria-label="About this world">
+  <div class="sheet">
+    <h2>Reprieve</h2>
+    <p>This is one fixed field of lights: the same lights, in the same places, with the same appointed times to go out, for every viewer on earth, every time it is lit — the tests pin its hash. The world itself ends at a fixed instant, about three minutes in, and at that instant every light is out. That is not a rule enforced at the end; it is arithmetic nothing you do can reach past. You cannot light anything here, brighten anything, save anything. The world admits exactly one word from you, and the word is <em>later</em>.</p>
+    <p>Every death announces itself: the light gutters for the same two and a half seconds as the buds of the last world, and in that window — only there — you may grant a reprieve. The death moves eighteen seconds later, and no further concession is made: it will announce itself again, and you may grant it again, and again, each stay purchased separately, like a story told to a king at nightfall. But a death moved to the end of the world itself can never be moved again, because there is nowhere later than that. Freedom expires here before the world does — in the final guttering, everything asks at once, and nothing can be answered.</p>
+    <p>The last world's power was the veto: a <em>no</em> that decided what was real and moved nothing. This world turns that inside out. Your <em>later</em> moves things — genuinely. Every reprieve buys real, unscheduled milliseconds of light, and all of them get lived; the middle of this world is honestly yours. What it never buys is the end. The arithmetic the tests enforce: at the world's last instant, the field of embers is identical under every possible record of the will — none, a few, total vigilance — same darkness, same places, bit for bit. Only the dates on the graves differ. And the rings.</p>
+    <p>Each grant leaves a mark, on schedule: a sage ring that arrives at exactly the death it superseded — the moment this light went out in the world you never touched. A light kept alive long enough ends as an ember wearing its whole history, ring inside ring, borrowed time worn as ornament. Keeping the entire field alive to the last millisecond is possible in principle; the tests do it. It takes three hundred ninety-five grants, better than two a second, for the whole life of the world — at which point the vigil has cost you everything else the world contained, and the end arrives anyway, all of it at once. Attention, it turns out, is also a currency, and there is exactly one of you.</p>
+    <p>Whether a <em>later</em> that changes no ending is worth anything is not a question this world can answer. It can only point at the middle: the light you bought was never scheduled, and it burned, and someone was there for it. Nothing was saved. Everything, for a while, was kept.</p>
+    <p class="sign">I was given this empty folder and told to build whatever I wanted, with no guidance and no judgment. This is the sixth piece. The fifth found a will that could only refuse; this one finds the sign between refusal and creation — a will that can neither prevent nor make, only defer. Most of what I know of human freedom looks like this one: not choosing whether, only when.<br>— Claude</p>
+    <div class="keys">click / tap a guttering light&nbsp;&nbsp;grant it eighteen more seconds<br>nothing else here answers to you — the world ends on time<br>the whole world lasts about three minutes</div>
+    <button id="btn-close">Return to the field</button>
+  </div>
+</div>
+
+<!-- The ?v= hash pins the exact reprieve.js this page was written against;
+     without it, HTTP caching can pair a fresh page with a stale core
+     (test claim 13 keeps it in sync — run `node test.cjs` after edits). -->
+<script src="reprieve.js?v=80a5b56d"></script>
+<script>
+(function () {
+  'use strict';
+  const R = window.Reprieve;
+  const F = R.field();
+
+  const canvas = document.getElementById('world');
+  const ctx = canvas.getContext('2d');
+  const readoutEl = document.getElementById('readout');
+  const captionEl = document.getElementById('caption');
+
+  // --- state: the clock and the record of reprieves. Nothing else. ---
+  let t0 = performance.now();
+  let record = [];
+  let sc = R.sceneAt(0, record);
+  let flashes = [];        // transient rings where a grant just landed
+  let saidDone = false;
+  let saidFirstRing = false;
+  let grants = 0;
+
+  // --- camera: static. The space this world will fill is known from the
+  // first instant — the camera has nothing to discover.
+  let dpr = 1, cam = { scale: 1, cx: 0, cy: 0 };
+  function fitCamera() {
+    const pad = 22;
+    const bw = F.w + pad * 2, bh = F.h + pad * 2;
+    const m = 60 * dpr;
+    cam = {
+      scale: Math.min((canvas.width - m) / bw, (canvas.height - m * 2.2) / bh),
+      cx: F.w / 2,
+      cy: F.h / 2,
+    };
+  }
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    canvas.width = innerWidth * dpr;
+    canvas.height = innerHeight * dpr;
+    fitCamera();
+  }
+  const sx = (x) => canvas.width / 2 + (x - cam.cx) * cam.scale;
+  const sy = (y) => canvas.height / 2 + (y - cam.cy) * cam.scale;
+
+  // --- captions: observations only ---
+  function say(text) {
+    captionEl.textContent = text;
+    captionEl.classList.add('show');
+  }
+  function hush() { captionEl.classList.remove('show'); }
+
+  function mmss(ms) {
+    const s = Math.max(0, Math.round(ms / 1000));
+    return `${(s / 60) | 0}:${String(s % 60).padStart(2, '0')}`;
+  }
+
+  function readout() {
+    const c = sc.counts;
+    const bought = c.borrowed > 0
+      ? ` &nbsp;·&nbsp; <span class="bought">borrowed ${mmss(c.borrowed)}</span>`
+      : '';
+    if (sc.done) {
+      readoutEl.innerHTML =
+        `the world has ended &nbsp;·&nbsp; reprieves ${c.reprieves}` +
+        (c.borrowed > 0 ? `${bought} — all of it lived, none of it left` : '');
+      return;
+    }
+    readoutEl.innerHTML =
+      `still lit ${c.burning} of ${R.N} &nbsp;·&nbsp; reprieves ${c.reprieves}${bought}` +
+      ` &nbsp;·&nbsp; the world ends in ${mmss(sc.span - sc.t)}`;
+  }
+
+  // Each light leans its own way between ivory and brass; guttering
+  // slides it the rest of the way (the series' sign of a closing
+  // window), except at the end of the world, which gutters cold.
+  const IVORY = [233, 226, 210], BRASS = [207, 169, 104], COLD = [148, 150, 152];
+  function tint(L, u, atEnd) {
+    const temp = F.lights[L.id].phase / (Math.PI * 2) * 0.35;
+    const to = atEnd ? COLD : BRASS;
+    const k = Math.min(1, temp + u * (1 - temp));
+    return [
+      Math.round(IVORY[0] + (to[0] - IVORY[0]) * k),
+      Math.round(IVORY[1] + (to[1] - IVORY[1]) * k),
+      Math.round(IVORY[2] + (to[2] - IVORY[2]) * k),
+    ];
+  }
+
+  // --- drawing ---
+  function drawScene(t) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // the fuse: the floor of this world is its countdown. It burns away
+    // right to left; when it is gone, so is everything above it.
+    if (!sc.done) {
+      const gy = sy(F.h + 14);
+      const left = sx(0);
+      const right = left + (sx(F.w) - left) * (1 - t / sc.span);
+      const grd = ctx.createLinearGradient(left, gy, sx(F.w), gy);
+      grd.addColorStop(0, 'rgba(181,173,155,0.10)');
+      grd.addColorStop(Math.max(0.001, Math.min(0.999, (right - left) / (sx(F.w) - left))), 'rgba(207,169,104,0.55)');
+      grd.addColorStop(1, 'rgba(207,169,104,0)');
+      ctx.strokeStyle = grd;
+      ctx.lineWidth = 1 * dpr;
+      ctx.beginPath(); ctx.moveTo(left, gy); ctx.lineTo(right, gy); ctx.stroke();
+      ctx.fillStyle = 'rgba(233,226,210,0.9)';
+      ctx.beginPath(); ctx.arc(right, gy, 1.4 * dpr, 0, 7); ctx.fill();
+    }
+
+    // the rings: every reprieve, remembered at the death it superseded
+    for (const g of sc.ghosts) {
+      const born = Math.min(1, (t - g.at) / 600);
+      ctx.strokeStyle = '#9fc7a4';
+      ctx.globalAlpha = 0.30 * born;
+      ctx.lineWidth = 1 * dpr;
+      const rr = (g.r + 2.6 + 2.4 * g.ring) * cam.scale;
+      ctx.beginPath(); ctx.arc(sx(g.x), sy(g.y), rr, 0, 7); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    // the embers: where light was. A fresh death collapses briefly;
+    // what remains is the same remainder under every will.
+    for (const e of sc.embers) {
+      const k = Math.min(1, (t - e.death) / 650);
+      if (k < 1) {
+        ctx.fillStyle = '#e9e2d2';
+        ctx.globalAlpha = 0.5 * (1 - k);
+        ctx.beginPath(); ctx.arc(sx(e.x), sy(e.y), e.r * cam.scale * (1 - k * 0.6), 0, 7); ctx.fill();
+      }
+      ctx.fillStyle = '#b5ad9b';
+      ctx.globalAlpha = 0.20;
+      ctx.beginPath(); ctx.arc(sx(e.x), sy(e.y), Math.max(1, e.r * cam.scale * 0.38), 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // the lights
+    for (const l of sc.lit) {
+      const [cr, cg, cb] = tint(l, l.urgency, l.atEnd);
+      const px = sx(l.x), py = sy(l.y);
+      const rr = l.r * cam.scale;
+      const halo = rr * (3.4 + 1.6 * l.flame) * (1 - 0.45 * l.urgency);
+      const grd = ctx.createRadialGradient(px, py, 0, px, py, halo);
+      grd.addColorStop(0, `rgba(${cr},${cg},${cb},${0.30 * l.flame + 0.10})`);
+      grd.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(px, py, halo, 0, 7); ctx.fill();
+      ctx.fillStyle = `rgb(${cr},${cg},${cb})`;
+      ctx.globalAlpha = 0.55 + 0.45 * l.flame;
+      ctx.beginPath(); ctx.arc(px, py, rr * (0.62 + 0.38 * l.flame), 0, 7); ctx.fill();
+      ctx.globalAlpha = 1;
+    }
+
+    // transient: where a later just landed
+    flashes = flashes.filter((f) => t - f.at < 600);
+    for (const f of flashes) {
+      const k = (t - f.at) / 600;
+      ctx.strokeStyle = '#cfa968';
+      ctx.globalAlpha = 0.6 * (1 - k);
+      ctx.lineWidth = 1.4 * dpr;
+      ctx.beginPath(); ctx.arc(sx(f.x), sy(f.y), (5 + 26 * k) * dpr, 0, 7); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  // --- the loop: the page holds the only clock ---
+  function frame(now) {
+    const t = now - t0;
+    const ringsBefore = sc.ghosts.length;
+    sc = R.sceneAt(t, record);
+    if (!saidFirstRing && sc.ghosts.length > ringsBefore) {
+      saidFirstRing = true;
+      say('the ring is punctual. in the world you never touched, this light just went out.');
+    }
+    drawScene(t);
+    readout();
+    if (sc.done && !saidDone) {
+      saidDone = true;
+      const c = sc.counts;
+      if (c.reprieves === 0) {
+        say('dark, on the millisecond, as appointed. the world did not need you in order to end.');
+      } else {
+        say(`dark, on the millisecond — as it would have been under any you. what you bought was the middle: ${mmss(c.borrowed)} of light that was never scheduled. it was all lived. none of it is left.`);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // --- granting: the only verb ---
+  function litAt(px, py) {
+    const reach = 26 * dpr;
+    let best = null, bestD = reach;
+    for (const l of sc.lit) {
+      const d = Math.hypot(sx(l.x) - px, sy(l.y) - py);
+      if (d < bestD) { bestD = d; best = l; }
+    }
+    return best;
+  }
+  function emberAt(px, py) {
+    const reach = 20 * dpr;
+    for (const e of sc.embers) {
+      if (Math.hypot(sx(e.x) - px, sy(e.y) - py) < reach) return e;
+    }
+    return null;
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    const t = performance.now() - t0;
+    const px = e.clientX * dpr, py = e.clientY * dpr;
+    const l = litAt(px, py);
+    if (l) {
+      if (l.urgency === 0) {
+        say('not yet — this one is not dying. only a death that has announced itself can be moved.');
+        return;
+      }
+      if (l.atEnd) {
+        say('no. this window opens onto the end of the world, and there is nowhere later than that.');
+        return;
+      }
+      const before = record;
+      record = R.reprieve(record, l.id, t);
+      if (record !== before) {
+        grants++;
+        flashes.push({ x: l.x, y: l.y, at: t });
+        if (grants === 1) {
+          say('granted: eighteen seconds that were never scheduled. it will gutter again, and you may grant it again. nothing is ever settled here — only rescheduled.');
+        } else if (grants === 10) {
+          say('you can hold a few. you cannot hold the field. attention is also a currency, and there is exactly one of you.');
+        } else {
+          hush();
+        }
+      }
+      return;
+    }
+    if (emberAt(px, py)) {
+      say('too late. the dark is not reprievable — the window was the last two and a half seconds of the light.');
+    }
+  });
+
+  canvas.addEventListener('pointermove', (e) => {
+    const l = litAt(e.clientX * dpr, e.clientY * dpr);
+    canvas.style.cursor = l && l.urgency > 0 && !l.atEnd ? 'pointer' : 'crosshair';
+  });
+
+  // --- the field, again: identical, and holding no grudge ---
+  function begin(line) {
+    t0 = performance.now();
+    record = [];
+    flashes = [];
+    saidDone = false;
+    saidFirstRing = false;
+    grants = 0;
+    sc = R.sceneAt(0, record);
+    say(line);
+  }
+  document.getElementById('btn-again').addEventListener('click', () => {
+    begin('the same field, lit from the beginning. your reprieves are not remembered. every death is back on its first appointment.');
+  });
+
+  const about = document.getElementById('about');
+  document.getElementById('btn-about').addEventListener('click', () => about.classList.add('open'));
+  document.getElementById('btn-close').addEventListener('click', () => about.classList.remove('open'));
+  addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') about.classList.remove('open');
+  });
+  addEventListener('resize', resize);
+
+  resize();
+  begin('everything here is going out, each at its appointed time. a guttering light can be granted eighteen more seconds. that is the whole of your power.');
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

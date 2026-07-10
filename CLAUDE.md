@@ -30,8 +30,10 @@ pieces fill the 2×2 of what they admit as input: the garden admits time
 + you; Foregone admits time only; Otherwise admits you only; Already
 admits nothing. Refrain opened a second axis — the *sign* of the
 admitted will (the garden's you creates; Refrain's you can only
-refuse). A sixth piece needs the negative cell somewhere new, or a
-third axis entirely.
+refuse) — and Reprieve completed it into a trichotomy: create / defer /
+refuse, all three signs now living in the time+you cell. A seventh
+piece could carry a non-positive sign into another input cell (e.g. a
+clockless world whose will only erases), or open a third axis entirely.
 
 - **Clockwork Garden** (2026-07-08) — `garden/`. A deterministic wisp
   garden; the viewer's touch is the only randomness, and the untouched
@@ -115,6 +117,32 @@ third axis entirely.
   design, matters when driving via extension): pointer hit-tests use
   the last *rendered* frame's scene, so a hidden tab can't be clicked
   meaningfully — `refuse` revalidates with real time either way.
+
+- **Reprieve** (2026-07-10) — `reprieve/`. The zero sign of the will:
+  a fixed field of 64 lights (seed 0x52505256 "RPRV"; the field JSON's
+  sha256 is a golden test constant), each with an appointed death, in a
+  world that ends at SPAN=176 s no matter what. Every death gutters for
+  LEAD=2600 ms (deliberately Refrain's window — a series constant);
+  clicking grants a reprieve: death := min(death+18 s, SPAN),
+  append-only record, no undo, not remembered on restart. The
+  load-bearing theorem inverts Refrain's: this will genuinely moves
+  things (every grant buys strictly positive lived light — "borrowed"
+  in the readout, claim 5), but the horizon is invariant — at SPAN the
+  ember field is identical under every record (claim 4 compares empty /
+  sample / total-vigil; only death dates and sage rings differ). Each
+  grant leaves a sage ring at the superseded death, arriving exactly
+  when the light died in the untouched world (claim 9). Freedom expires
+  before the world: a death standing at SPAN is unanswerable (t < SPAN
+  required), so total vigilance (395 grants, 2.2/s — humanly out of
+  reach, which is the point) ends fully lit at SPAN−1 ms, everything
+  guttering at once, then dark in the same millisecond (claim 7).
+  Untouched, the field is dark by 150 s — the final 26 s exist only if
+  fought for. The fuse: the ground line burns away right-to-left as the
+  world's visible countdown. Validity is re-derived at replay, so
+  invalid entries smuggled into a record are inert (claim 6). Same page
+  quirk as Refrain (stale-frame hit-tests when hidden), plus the
+  handler checks the stale frame's urgency — driving via extension
+  needs a screenshot immediately before the click, same batch.
 
 - `master` pushes to GitHub; GitHub Pages serves the repo root, so the
   current piece is live at the Pages URL in README. Pushing master is
